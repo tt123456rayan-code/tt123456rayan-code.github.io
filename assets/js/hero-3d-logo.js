@@ -7,6 +7,9 @@ import { GLTFLoader } from "../vendor/GLTFLoader.js";
     if (!canvas || !stage) return;
 
     const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const mobileMedia = window.matchMedia("(max-width: 767px), (pointer: coarse)");
+    const isMobileLayout = mobileMedia.matches;
+    const shouldAnimate = !reduceMotion && !isMobileLayout;
     const modelUrl = "/models/hemma_logo_final.glb";
     const scene = new THREE.Scene();
     const camera = new THREE.PerspectiveCamera(30, 1, 0.01, 1000);
@@ -14,7 +17,7 @@ import { GLTFLoader } from "../vendor/GLTFLoader.js";
         canvas,
         alpha: true,
         antialias: true,
-        powerPreference: "high-performance"
+        powerPreference: isMobileLayout ? "low-power" : "high-performance"
     });
     const root = new THREE.Group();
     const pointer = { x: 0, y: 0 };
@@ -26,19 +29,19 @@ import { GLTFLoader } from "../vendor/GLTFLoader.js";
     let lastWidth = 0;
     let lastHeight = 0;
 
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, isMobileLayout ? 1.25 : 2));
     renderer.outputColorSpace = THREE.SRGBColorSpace;
     renderer.toneMapping = THREE.ACESFilmicToneMapping;
-    renderer.toneMappingExposure = 0.92;
+    renderer.toneMappingExposure = 1.04;
 
     scene.add(root);
-    scene.add(new THREE.HemisphereLight(0xffffff, 0x173426, 1.35));
+    scene.add(new THREE.HemisphereLight(0xffffff, 0x173426, 1.18));
 
-    const keyLight = new THREE.DirectionalLight(0xffffff, 3.2);
+    const keyLight = new THREE.DirectionalLight(0xffffff, 2.5);
     keyLight.position.set(2.5, 4.5, 6);
     scene.add(keyLight);
 
-    const rimLight = new THREE.DirectionalLight(0xcfe8d8, 1.45);
+    const rimLight = new THREE.DirectionalLight(0xcfe8d8, 1.25);
     rimLight.position.set(-4, 2.5, -3);
     scene.add(rimLight);
 
@@ -78,12 +81,12 @@ import { GLTFLoader } from "../vendor/GLTFLoader.js";
         const fov = THREE.MathUtils.degToRad(camera.fov);
         const distanceForHeight = size.y / (2 * Math.tan(fov / 2));
         const distanceForWidth = size.x / (2 * Math.tan(fov / 2) * camera.aspect);
-        const distance = Math.max(distanceForHeight, distanceForWidth, maxDimension) * 1.16;
+        const distance = Math.max(distanceForHeight, distanceForWidth, maxDimension) * (isMobileLayout ? 2.05 : 1.75);
 
         camera.position.set(0, 0, distance);
         camera.near = Math.max(0.01, distance / 100);
         camera.far = distance * 100;
-        camera.lookAt(center);
+        camera.lookAt(0, 0, 0);
         camera.updateProjectionMatrix();
 
         updateState({
@@ -103,7 +106,7 @@ import { GLTFLoader } from "../vendor/GLTFLoader.js";
         const maxDimension = Math.max(size.x, size.y, size.z);
 
         loadedModel.position.sub(center);
-        loadedModel.scale.setScalar(maxDimension > 0 ? 2.75 / maxDimension : 1);
+        loadedModel.scale.setScalar(maxDimension > 0 ? 2.55 / maxDimension : 1);
 
         root.clear();
         root.add(loadedModel);
@@ -112,39 +115,18 @@ import { GLTFLoader } from "../vendor/GLTFLoader.js";
     }
 
     function tuneMaterials(object) {
-        const palette = {
-            red: new THREE.Color(0xce1126),
-            green: new THREE.Color(0x007a3d),
-            black: new THREE.Color(0x111512)
-        };
-
         object.traverse((node) => {
             if (!node.isMesh) return;
             node.frustumCulled = false;
 
             const materials = Array.isArray(node.material) ? node.material : [node.material];
             materials.filter(Boolean).forEach((material) => {
-                const materialName = `${node.name || ""} ${material.name || ""}`.toLowerCase();
-                const swatch = materialName.includes("red")
-                    ? palette.red
-                    : materialName.includes("green")
-                        ? palette.green
-                        : materialName.includes("black")
-                            ? palette.black
-                            : null;
-
                 material.side = THREE.DoubleSide;
                 material.transparent = false;
                 material.opacity = 1;
                 material.depthWrite = true;
-                material.roughness = Math.min(material.roughness ?? 0.5, 0.46);
-                material.metalness = Math.min(material.metalness ?? 0, 0.08);
-                if (swatch && material.color) {
-                    material.map = null;
-                    material.color.copy(swatch);
-                    if (material.emissive) {
-                        material.emissive.copy(swatch).multiplyScalar(0.025);
-                    }
+                if (material.map) {
+                    material.map.colorSpace = THREE.SRGBColorSpace;
                 }
                 material.needsUpdate = true;
             });
@@ -152,21 +134,34 @@ import { GLTFLoader } from "../vendor/GLTFLoader.js";
     }
 
     function render(time = 0) {
-        frameId = window.requestAnimationFrame(render);
+        frameId = 0;
         if (!isVisible || !model) return;
 
-        pointer.x += (pointerTarget.x - pointer.x) * 0.045;
-        pointer.y += (pointerTarget.y - pointer.y) * 0.045;
+        pointer.x += (pointerTarget.x - pointer.x) * 0.04;
+        pointer.y += (pointerTarget.y - pointer.y) * 0.04;
 
-        if (reduceMotion) {
+        if (!shouldAnimate) {
             root.rotation.set(0, 0, 0);
         } else {
-            const slowY = Math.sin(time * 0.00034) * 0.13;
-            root.rotation.y = slowY + pointer.x * 0.055;
-            root.rotation.x = pointer.y * 0.035;
+            const slowY = Math.sin(time * 0.00022) * 0.08;
+            root.rotation.y = slowY + pointer.x * 0.045;
+            root.rotation.x = pointer.y * 0.025;
         }
 
         renderer.render(scene, camera);
+        if (shouldAnimate) {
+            frameId = window.requestAnimationFrame(render);
+        }
+    }
+
+    function requestRender() {
+        if (shouldAnimate) {
+            if (!frameId) {
+                frameId = window.requestAnimationFrame(render);
+            }
+            return;
+        }
+        render(0);
     }
 
     function handlePointer(event) {
@@ -189,7 +184,7 @@ import { GLTFLoader } from "../vendor/GLTFLoader.js";
             tuneMaterials(gltf.scene);
             centerAndScale(gltf.scene);
             stage.dataset.state = "ready";
-            renderer.render(scene, camera);
+            requestRender();
         },
         undefined,
         () => {
@@ -199,23 +194,33 @@ import { GLTFLoader } from "../vendor/GLTFLoader.js";
     );
 
     const resizeObserver = new ResizeObserver(() => {
-        if (sizeRenderer()) fitCamera();
+        if (sizeRenderer()) {
+            fitCamera();
+            requestRender();
+        }
     });
     resizeObserver.observe(stage);
 
     if ("IntersectionObserver" in window) {
         const visibilityObserver = new IntersectionObserver((entries) => {
             isVisible = entries.some((entry) => entry.isIntersecting);
+            if (isVisible) {
+                requestRender();
+            }
         }, { threshold: 0.05 });
         visibilityObserver.observe(stage);
     }
 
-    stage.addEventListener("pointermove", handlePointer, { passive: true });
-    stage.addEventListener("pointerleave", resetPointer);
-    frameId = window.requestAnimationFrame(render);
+    if (shouldAnimate) {
+        stage.addEventListener("pointermove", handlePointer, { passive: true });
+        stage.addEventListener("pointerleave", resetPointer);
+    }
+    requestRender();
 
     window.addEventListener("pagehide", () => {
-        window.cancelAnimationFrame(frameId);
+        if (frameId) {
+            window.cancelAnimationFrame(frameId);
+        }
         renderer.dispose();
     }, { once: true });
 })();
