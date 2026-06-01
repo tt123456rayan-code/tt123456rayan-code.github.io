@@ -580,7 +580,7 @@
                     profileName.textContent = member.name || "-";
                 }
                 if (profileMembership) {
-                    profileMembership.textContent = member.membership_id || "-";
+                    profileMembership.textContent = member.membership_number || member.membership_id || "-";
                 }
                 if (profileCommittee) {
                     profileCommittee.textContent = member.committee || "-";
