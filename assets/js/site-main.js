@@ -40,6 +40,7 @@
                 health: { ar: { title: "لجنة الصحة", copy: "تهتم بالتوعية الصحية والأنشطة التي تعزز صحة الشباب الجسدية والنفسية.", items: ["رئيس لجنة: مها دكيدك", "نائب الرئيس: سلين بكر"] }, en: { title: "Health Committee", copy: "Focuses on health awareness and activities that support youth physical and mental wellbeing.", items: ["Chair: Maha Dkeidek", "Deputy chair: Seline Baker"] } },
                 legal: { ar: { title: "لجنة الشؤون القانونية", copy: "تنشر الثقافة القانونية وتدعم وعي الشباب بحقوقهم ومسؤولياتهم.", items: ["رئيس لجنة: رؤى النشاش", "نائب الرئيس: ايوب احمد عبد السكارنه"] }, en: { title: "Legal Affairs Committee", copy: "Promotes legal culture and youth awareness of rights and responsibilities.", items: ["Chair: Ro'a Al-Nashash", "Deputy chair: Ayoub Ahmad Abd Al-Sakarneh"] } },
                 economy: { ar: { title: "لجنة الاقتصاد والريادة", copy: "تدعم التفكير الريادي وإدارة المشاريع والمسارات الاقتصادية للشباب.", items: ["رئيس اللجنة: أحمد جمال الفاعوري", "برامج ريادة ومهارات مالية"] }, en: { title: "Economy and Entrepreneurship Committee", copy: "Supports entrepreneurial thinking, project management, and economic tracks for youth.", items: ["Committee chair: Ahmad Jamal Al-Faouri", "Entrepreneurship and financial skills programs"] } },
+                political: { ar: { title: "لجنة التمكين السياسي والدبلوماسي", copy: "ترفع وعي الشباب بالمشاركة المدنية والحوار وصناعة القرار والبروتوكول ولغة التمثيل العام المسؤولة.", items: ["رئيس لجنة: علي الرغول"] }, en: { title: "Political and Diplomatic Empowerment Committee", copy: "Raises youth awareness of civic participation, dialogue, decision-making, protocol, and responsible public representation.", items: ["Committee chair: Ali Al-Rghoul"] } },
                 environment: { ar: { title: "لجنة البيئة", copy: "تعمل على الوعي البيئي والاستدامة والمبادرات الميدانية الخضراء.", items: ["رئيس لجنة: جمان الزغل", "حملات توعية واستدامة"] }, en: { title: "Environment Committee", copy: "Works on environmental awareness, sustainability, and green field initiatives.", items: ["Committee chair: Juman Al-Zaghal", "Awareness and sustainability campaigns"] } },
                 media: { ar: { title: "لجنة الإعلام", copy: "تدير الهوية الإعلامية والتغطية وصناعة المحتوى للمبادرة.", items: ["نائب الرئيس: شهد سنجق", "الداعم الإعلامي: Hook Jo"] }, en: { title: "Media Committee", copy: "Manages the initiative's media identity, coverage, and content production.", items: ["Deputy media chair: Shahd Sanjaq", "Media supporter: Hook Jo"] } },
                 "public-relations": { ar: { title: "العلاقات العامة والشراكات", copy: "تبني الجسور مع الشركاء والجهات الداعمة وتنظم الحضور المؤسسي.", items: ["شراكات وتنسيق فعاليات"] }, en: { title: "Public Relations and Partnerships", copy: "Builds bridges with partners and supporting institutions while organizing institutional presence.", items: ["Partnerships and event coordination"] } },
@@ -109,6 +110,8 @@
           "دمج مساري التطوير والاقتصاد لدعم الأفكار الريادية وإدارة المشاريع والتخطيط المالي.": "Merging development and economy tracks to support entrepreneurial ideas, project management, and financial planning.",
           "لجنة التمكين السياسي والدبلوماسي": "Political and Diplomatic Empowerment Committee",
           "رفع وعي الشباب بالحياة العامة وآليات المشاركة وصناعة القرار.": "Raising youth awareness of public life, participation mechanisms, and decision-making.",
+          "علي الرغول": "Ali Al-Rghoul",
+          "رئيس لجنة التمكين السياسي والدبلوماسي": "Chair of Political and Diplomatic Empowerment Committee",
           "لجنة الإعلام": "Media Committee",
           "إدارة المحتوى الإعلامي والتغطيات وصناعة الهوية الاتصالية للمبادرة، بدعم من Hook Jo.": "Managing media content, coverage, and the initiative’s communication identity with support from Hook Jo.",
           "اللجنة المجتمعية والعمل التطوعي": "Community and Voluntary Work Committee",
@@ -607,18 +610,63 @@
             });
 
             if (form) {
-                form.addEventListener("submit", (event) => {
+                form.addEventListener("submit", async (event) => {
+                    event.preventDefault();
                     if (!form.checkValidity()) {
-                        event.preventDefault();
                         form.reportValidity();
                         return;
                     }
 
                     const ageValue = Number(document.getElementById("age").value);
                     if (!Number.isInteger(ageValue) || ageValue < 15 || ageValue > 40) {
-                        event.preventDefault();
                         message.textContent = currentLanguage === "en" ? translations["يرجى إدخال عمر صحيح بين 15 و40."] : "يرجى إدخال عمر صحيح بين 15 و40.";
                         return;
+                    }
+
+                    const supabaseConfig = window.HIMMA_SUPABASE_CONFIG;
+                    if (!window.supabase || !supabaseConfig || !supabaseConfig.url || !supabaseConfig.anonKey) {
+                        message.textContent = currentLanguage === "en" ? "The registration service is temporarily unavailable. Please try again later." : "خدمة التسجيل غير متاحة مؤقتاً. يرجى المحاولة لاحقاً.";
+                        return;
+                    }
+
+                    const submitButton = form.querySelector("[type='submit']");
+                    const originalButtonText = submitButton ? submitButton.textContent : "";
+                    if (submitButton) {
+                        submitButton.disabled = true;
+                        submitButton.textContent = currentLanguage === "en" ? "Sending..." : "جارٍ الإرسال...";
+                    }
+                    message.textContent = "";
+
+                    const formData = new FormData(form);
+                    const payload = {
+                        full_name: String(formData.get("fullName") || "").trim(),
+                        age: ageValue,
+                        phone: String(formData.get("phone") || "").trim(),
+                        governorate: String(formData.get("governorate") || "").trim(),
+                        committee: String(formData.get("committee") || "").trim(),
+                        courses: String(formData.get("courses") || "").trim() || null,
+                        motivation: String(formData.get("motivation") || "").trim(),
+                        skills: String(formData.get("skills") || "").trim() || null,
+                        availability: String(formData.get("availability") || "").trim() || null,
+                        page_url: window.location.href,
+                        user_agent: navigator.userAgent
+                    };
+
+                    try {
+                        const client = window.supabase.createClient(supabaseConfig.url, supabaseConfig.anonKey);
+                        const { error } = await client.from("join_requests").insert(payload);
+                        if (error) {
+                            throw error;
+                        }
+                        window.location.href = "thank-you.html";
+                    } catch (error) {
+                        console.error("Join request failed", error);
+                        message.textContent = currentLanguage === "en" ? "We could not send the request right now. Please try again shortly." : "تعذر إرسال الطلب حالياً. يرجى المحاولة بعد قليل.";
+                    } finally {
+                        if (submitButton) {
+                            submitButton.disabled = false;
+                            submitButton.textContent = originalButtonText;
+                        }
                     }
                 });
             }
