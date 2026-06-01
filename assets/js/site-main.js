@@ -7,6 +7,8 @@
             const mainNav = document.getElementById("main-nav");
             const form = document.getElementById("join-form");
             const message = document.getElementById("form-message");
+            const memberLoginForm = document.getElementById("member-login-form");
+            const loginMessage = document.getElementById("login-message");
             const structureTabs = Array.from(document.querySelectorAll("[data-structure-filter]"));
             const structureCards = Array.from(document.querySelectorAll("[data-structure-groups]"));
             const structureCurrentTitle = document.getElementById("structure-current-title");
@@ -624,8 +626,8 @@
                     }
 
                     const supabaseConfig = window.HIMMA_SUPABASE_CONFIG;
-                    if (!window.supabase || !supabaseConfig || !supabaseConfig.url || !supabaseConfig.anonKey) {
-                        message.textContent = currentLanguage === "en" ? "The registration service is temporarily unavailable. Please try again later." : "خدمة التسجيل غير متاحة مؤقتاً. يرجى المحاولة لاحقاً.";
+                    if (!supabaseConfig || !supabaseConfig.url || !supabaseConfig.anonKey) {
+                        message.textContent = currentLanguage === "en" ? "We could not send the request right now. Please try again shortly." : "تعذر إرسال الطلب حالياً. يرجى المحاولة بعد قليل.";
                         return;
                     }
 
@@ -653,10 +655,18 @@
                     };
 
                     try {
-                        const client = window.supabase.createClient(supabaseConfig.url, supabaseConfig.anonKey);
-                        const { error } = await client.from("join_requests").insert(payload);
-                        if (error) {
-                            throw error;
+                        const response = await fetch(supabaseConfig.url.replace(/\/$/, "") + "/rest/v1/join_requests", {
+                            method: "POST",
+                            headers: {
+                                "Content-Type": "application/json",
+                                "apikey": supabaseConfig.anonKey,
+                                "Authorization": "Bearer " + supabaseConfig.anonKey,
+                                "Prefer": "return=minimal"
+                            },
+                            body: JSON.stringify(payload)
+                        });
+                        if (!response.ok) {
+                            throw new Error("Join request insert failed");
                         }
                         window.location.href = "thank-you.html";
                     } catch (error) {
@@ -667,6 +677,15 @@
                             submitButton.disabled = false;
                             submitButton.textContent = originalButtonText;
                         }
+                    }
+                });
+            }
+
+            if (memberLoginForm) {
+                memberLoginForm.addEventListener("submit", (event) => {
+                    event.preventDefault();
+                    if (loginMessage) {
+                        loginMessage.textContent = currentLanguage === "en" ? "Membership login is not available from this static page right now." : "تسجيل دخول الأعضاء غير متاح من هذه الصفحة الثابتة حالياً.";
                     }
                 });
             }

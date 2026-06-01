@@ -19,6 +19,7 @@ alter table public.join_requests enable row level security;
 revoke all on table public.join_requests from anon;
 revoke all on table public.join_requests from authenticated;
 
+grant usage on schema public to anon;
 grant insert on table public.join_requests to anon;
 
 drop policy if exists "Allow anonymous join request inserts" on public.join_requests;
