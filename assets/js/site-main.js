@@ -619,8 +619,9 @@
                         return;
                     }
 
-                    const ageValue = Number(document.getElementById("age").value);
-                    if (!Number.isInteger(ageValue) || ageValue < 15 || ageValue > 40) {
+                    const ageInputValue = document.getElementById("age").value.trim();
+                    const ageValue = ageInputValue === "" ? null : Number(ageInputValue);
+                    if (ageValue !== null && (!Number.isInteger(ageValue) || ageValue < 15 || ageValue > 40)) {
                         message.textContent = currentLanguage === "en" ? translations["يرجى إدخال عمر صحيح بين 15 و40."] : "يرجى إدخال عمر صحيح بين 15 و40.";
                         return;
                     }
