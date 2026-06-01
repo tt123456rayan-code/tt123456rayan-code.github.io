@@ -9,6 +9,14 @@
             const message = document.getElementById("form-message");
             const memberLoginForm = document.getElementById("member-login-form");
             const loginMessage = document.getElementById("login-message");
+            const memberMembershipInput = document.getElementById("member-membership-id");
+            const memberPasswordInput = document.getElementById("member-password");
+            const profileMedia = document.getElementById("profile-media");
+            const profileName = document.getElementById("profile-name");
+            const profileMembership = document.getElementById("profile-membership");
+            const profileCommittee = document.getElementById("profile-committee");
+            const profileRole = document.getElementById("profile-role");
+            const dashboardLogout = document.getElementById("dashboard-logout");
             const structureTabs = Array.from(document.querySelectorAll("[data-structure-filter]"));
             const structureCards = Array.from(document.querySelectorAll("[data-structure-groups]"));
             const structureCurrentTitle = document.getElementById("structure-current-title");
@@ -559,6 +567,60 @@
                 (firstVisibleCard || structureProfilePanel).scrollIntoView({ block: "start", behavior: "auto" });
             }
 
+            function renderMemberProfile(member) {
+                if (profileName) {
+                    profileName.textContent = member.name || "-";
+                }
+                if (profileMembership) {
+                    profileMembership.textContent = member.membership_id || "-";
+                }
+                if (profileCommittee) {
+                    profileCommittee.textContent = member.committee || "-";
+                }
+                if (profileRole) {
+                    profileRole.textContent = member.role || "-";
+                }
+                if (profileMedia) {
+                    profileMedia.textContent = "";
+                    if (member.avatar_url) {
+                        const img = document.createElement("img");
+                        img.className = "member-photo";
+                        img.src = member.avatar_url;
+                        img.alt = member.name || "";
+                        img.loading = "lazy";
+                        img.decoding = "async";
+                        profileMedia.appendChild(img);
+                    }
+                }
+            }
+
+            async function memberLogin(membershipId, password) {
+                const supabaseConfig = window.HIMMA_SUPABASE_CONFIG;
+                if (!supabaseConfig || !supabaseConfig.url || !supabaseConfig.anonKey) {
+                    throw new Error("Missing Supabase public config");
+                }
+
+                const response = await fetch(supabaseConfig.url.replace(/\/$/, "") + "/rest/v1/rpc/member_login", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "apikey": supabaseConfig.anonKey,
+                        "Authorization": "Bearer " + supabaseConfig.anonKey
+                    },
+                    body: JSON.stringify({
+                        input_membership_id: membershipId,
+                        input_password: password
+                    })
+                });
+
+                if (!response.ok) {
+                    throw new Error("Member login RPC failed");
+                }
+
+                const data = await response.json().catch(() => []);
+                return Array.isArray(data) ? data[0] : null;
+            }
+
             structureTabs.forEach((tab) => {
                 tab.addEventListener("click", () => {
                     setStructureFilter(tab.dataset.structureFilter);
@@ -683,11 +745,60 @@
             }
 
             if (memberLoginForm) {
-                memberLoginForm.addEventListener("submit", (event) => {
+                memberLoginForm.addEventListener("submit", async (event) => {
                     event.preventDefault();
-                    if (loginMessage) {
-                        loginMessage.textContent = currentLanguage === "en" ? "Membership login is not available from this static page right now." : "تسجيل دخول الأعضاء غير متاح من هذه الصفحة الثابتة حالياً.";
+                    if (!memberLoginForm.checkValidity()) {
+                        memberLoginForm.reportValidity();
+                        return;
                     }
+
+                    const submitButton = memberLoginForm.querySelector("[type='submit']");
+                    const originalButtonText = submitButton ? submitButton.textContent : "";
+                    const membershipId = memberMembershipInput ? memberMembershipInput.value.trim() : "";
+                    const password = memberPasswordInput ? memberPasswordInput.value : "";
+
+                    if (submitButton) {
+                        submitButton.disabled = true;
+                        submitButton.textContent = currentLanguage === "en" ? "Signing in..." : "جارٍ الدخول...";
+                    }
+                    if (loginMessage) {
+                        loginMessage.textContent = "";
+                    }
+
+                    try {
+                        const member = await memberLogin(membershipId, password);
+                        if (!member) {
+                            if (loginMessage) {
+                                loginMessage.textContent = currentLanguage === "en" ? "Invalid membership ID or password." : "رقم العضوية أو كلمة المرور غير صحيحة.";
+                            }
+                            return;
+                        }
+
+                        renderMemberProfile(member);
+                        if (memberPasswordInput) {
+                            memberPasswordInput.value = "";
+                        }
+                        showSection("dashboard");
+                    } catch (_) {
+                        if (loginMessage) {
+                            loginMessage.textContent = currentLanguage === "en" ? "Could not sign in right now. Please try again later." : "تعذر تسجيل الدخول حالياً. يرجى المحاولة لاحقاً.";
+                        }
+                    } finally {
+                        if (memberPasswordInput) {
+                            memberPasswordInput.value = "";
+                        }
+                        if (submitButton) {
+                            submitButton.disabled = false;
+                            submitButton.textContent = originalButtonText;
+                        }
+                    }
+                });
+            }
+
+            if (dashboardLogout) {
+                dashboardLogout.addEventListener("click", () => {
+                    renderMemberProfile({});
+                    showSection("login");
                 });
             }
 
