@@ -577,7 +577,7 @@
 
             function renderMemberProfile(member) {
                 if (profileName) {
-                    profileName.textContent = member.name || "-";
+                    profileName.textContent = member.name || member.full_name || "-";
                 }
                 if (profileMembership) {
                     profileMembership.textContent = member.membership_number || member.membership_id || "-";
@@ -590,16 +590,52 @@
                 }
                 if (profileMedia) {
                     profileMedia.textContent = "";
-                    if (member.avatar_url) {
+                    const memberImage = member.avatar_url || member.image_url;
+                    if (memberImage) {
                         const img = document.createElement("img");
                         img.className = "member-photo";
-                        img.src = member.avatar_url;
-                        img.alt = member.name || "";
+                        img.src = memberImage;
+                        img.alt = member.name || member.full_name || "";
                         img.loading = "lazy";
                         img.decoding = "async";
                         profileMedia.appendChild(img);
                     }
                 }
+            }
+
+            function sanitizeMemberLoginData(member) {
+                if (!member || typeof member !== "object") {
+                    return null;
+                }
+                const { password_hash, password, token, access_token, refresh_token, ...safeMember } = member;
+                const hasMemberInfo = Boolean(
+                    safeMember.member_id ||
+                    safeMember.id ||
+                    safeMember.membership_id ||
+                    safeMember.membership_number ||
+                    safeMember.name ||
+                    safeMember.full_name
+                );
+                return hasMemberInfo ? safeMember : null;
+            }
+
+            function normalizeMemberLoginResponse(data) {
+                if (Array.isArray(data)) {
+                    return data.length > 0 ? sanitizeMemberLoginData(data[0]) : null;
+                }
+                if (data && typeof data === "object") {
+                    if (data.success === false) {
+                        return null;
+                    }
+                    if (data.member) {
+                        return sanitizeMemberLoginData(data.member);
+                    }
+                    if (data.success === true && data.data) {
+                        return sanitizeMemberLoginData(data.data);
+                    }
+                    return sanitizeMemberLoginData(data);
+                }
+                return null;
             }
 
             async function memberLogin(membershipId, password) {
@@ -625,8 +661,8 @@
                     throw new Error("Member login RPC failed");
                 }
 
-                const data = await response.json().catch(() => []);
-                return Array.isArray(data) ? data[0] : null;
+                const data = await response.json().catch(() => null);
+                return normalizeMemberLoginResponse(data);
             }
 
             structureTabs.forEach((tab) => {
