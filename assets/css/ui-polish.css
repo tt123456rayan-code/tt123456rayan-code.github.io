@@ -968,9 +968,56 @@ body.dark-mode .site-footer {
     }
 }
 
-.president-home-note {
-    margin: clamp(28px, 5vw, 56px) auto 0;
+.home-logo-showcase {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin: clamp(24px, 5vw, 52px) auto 0;
     max-width: 980px;
+    min-height: clamp(120px, 18vw, 190px);
+}
+
+.home-logo-showcase-img {
+    display: block;
+    width: clamp(180px, 28vw, 320px);
+    height: auto;
+    max-width: 100%;
+    object-fit: contain;
+    filter: drop-shadow(0 18px 28px rgba(0, 132, 61, 0.16));
+}
+
+.president-home-section {
+    display: grid;
+    grid-template-columns: minmax(220px, 340px) minmax(0, 1fr);
+    gap: clamp(18px, 3vw, 34px);
+    align-items: stretch;
+    margin: clamp(24px, 5vw, 56px) auto 0;
+    max-width: 1120px;
+    direction: rtl;
+}
+
+.president-home-portrait {
+    margin: 0;
+    min-height: 100%;
+    overflow: hidden;
+    border: 1px solid color-mix(in srgb, var(--brand-green, #00843d) 24%, transparent);
+    border-radius: 18px;
+    background: color-mix(in srgb, var(--surface, #ffffff) 92%, var(--brand-green, #00843d) 8%);
+    box-shadow: 0 18px 45px rgba(0, 0, 0, 0.08);
+}
+
+.president-home-portrait img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    min-height: 360px;
+    object-fit: cover;
+    object-position: center;
+}
+
+.president-home-note {
+    margin: 0;
+    max-width: none;
     padding: clamp(22px, 4vw, 36px);
     border: 1px solid color-mix(in srgb, var(--brand-green, #00843d) 28%, transparent);
     border-inline-start: 6px solid var(--brand-green, #00843d);
@@ -980,20 +1027,6 @@ body.dark-mode .site-footer {
     color: var(--text, #1f2a24);
     line-height: 2;
     text-align: right;
-}
-
-.home-model-showcase {
-    display: flex;
-    justify-content: center;
-    margin: clamp(24px, 5vw, 52px) auto 0;
-    max-width: 980px;
-}
-
-.home-model-showcase model-viewer {
-    width: min(100%, 520px);
-    height: clamp(260px, 42vw, 440px);
-    border-radius: 18px;
-    background: transparent;
 }
 
 .president-home-note p {
@@ -1015,16 +1048,41 @@ body.dark-mode .president-home-note {
     box-shadow: 0 18px 45px rgba(0, 0, 0, 0.28);
 }
 
-@media (max-width: 620px) {
-    .home-model-showcase model-viewer {
-        height: 260px;
-        width: 100%;
+body.dark-mode .president-home-portrait {
+    background: color-mix(in srgb, var(--dark-card, #101a16) 88%, var(--brand-green, #00843d) 12%);
+    border-color: color-mix(in srgb, var(--brand-green, #00843d) 42%, transparent);
+    box-shadow: 0 18px 45px rgba(0, 0, 0, 0.26);
+}
+
+@media (max-width: 820px) {
+    .president-home-section {
+        grid-template-columns: 1fr;
+        max-width: 680px;
     }
 
+    .president-home-portrait img {
+        min-height: 280px;
+        max-height: 460px;
+    }
+}
+
+@media (max-width: 620px) {
     .president-home-note {
         border-radius: 14px;
         padding: 18px 14px;
         line-height: 1.9;
+    }
+
+    .president-home-section {
+        gap: 14px;
+    }
+
+    .president-home-portrait {
+        border-radius: 14px;
+    }
+
+    .president-home-portrait img {
+        min-height: 240px;
     }
 }
 
