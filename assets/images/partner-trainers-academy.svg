@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 720" width="720" height="720">
+  <rect width="720" height="720" fill="#fff"/>
+  <circle cx="360" cy="360" r="315" fill="#050505" stroke="#ff6a39" stroke-width="18"/>
+  <circle cx="360" cy="360" r="220" fill="#fff"/>
+  <circle cx="360" cy="360" r="164" fill="none" stroke="#444" stroke-width="16"/>
+  <path d="M196 360h328M360 196v328M236 260c75 42 172 42 248 0M236 460c75-42 172-42 248 0" fill="none" stroke="#444" stroke-width="13"/>
+  <path d="M285 214c-45 90-45 202 0 292M435 214c45 90 45 202 0 292" fill="none" stroke="#444" stroke-width="13"/>
+  <text x="360" y="107" text-anchor="middle" direction="rtl" font-size="45" font-weight="900" fill="#ffd2c6" font-family="Tahoma, Arial, sans-serif">أكاديمية المدربين الدولية</text>
+  <text x="360" y="620" text-anchor="middle" font-size="36" font-weight="800" fill="#fff" font-family="Arial, sans-serif">International Trainers Academy</text>
+</svg>

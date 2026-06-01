@@ -1,0 +1,5 @@
+-- Deprecated.
+-- Do not seed member passwords or password hashes from SQL.
+-- Create Supabase Auth users and link public.members locally with:
+-- node scripts/bulk-create-auth-users.mjs
+-- See BULK_CREATE_USERS.md.

@@ -1,0 +1,378 @@
+.himma-ai-launcher,
+.himma-ai-panel {
+    font-family: inherit;
+}
+
+.himma-ai-launcher {
+    position: fixed;
+    right: 20px;
+    bottom: 20px;
+    z-index: 90;
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    max-width: calc(100vw - 32px);
+    min-height: 58px;
+    padding: 9px 14px 9px 16px;
+    border: 1px solid rgba(255, 255, 255, 0.24);
+    border-radius: 999px;
+    background: linear-gradient(135deg, #101312 0%, #0f7a3f 52%, #b51627 100%);
+    color: #ffffff;
+    box-shadow: 0 16px 38px rgba(16, 19, 18, 0.28);
+    cursor: pointer;
+    direction: rtl;
+}
+
+.himma-ai-launcher:hover,
+.himma-ai-launcher:focus-visible {
+    transform: translateY(-1px);
+    box-shadow: 0 20px 46px rgba(16, 19, 18, 0.34);
+}
+
+.himma-ai-launcher:focus-visible {
+    outline: 3px solid rgba(181, 138, 42, 0.45);
+    outline-offset: 3px;
+}
+
+.himma-ai-mark {
+    position: relative;
+    display: grid;
+    place-items: center;
+    width: 42px;
+    height: 42px;
+    flex: 0 0 42px;
+    border-radius: 50%;
+    background: #ffffff;
+    color: #101312;
+    overflow: hidden;
+    box-shadow:
+        inset 0 0 0 1px rgba(17, 17, 17, 0.1),
+        0 0 0 2px rgba(212, 175, 55, 0.36);
+}
+
+.himma-ai-mark::before {
+    content: "";
+    position: absolute;
+    inset: 3px;
+    border-radius: 50%;
+    border: 1.5px solid rgba(212, 175, 55, 0.55);
+}
+
+.himma-ai-mark::after {
+    content: none;
+}
+
+.himma-ai-mark svg {
+    position: relative;
+    z-index: 1;
+    width: 42px;
+    height: 42px;
+}
+
+.himma-ai-launcher-copy {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    min-width: 0;
+    line-height: 1.1;
+}
+
+.himma-ai-launcher-title {
+    font-size: 0.92rem;
+    font-weight: 800;
+    white-space: nowrap;
+}
+
+.himma-ai-launcher-note {
+    margin-top: 3px;
+    color: rgba(255, 255, 255, 0.78);
+    font-size: 0.75rem;
+    white-space: nowrap;
+}
+
+.himma-ai-panel {
+    position: fixed;
+    right: 20px;
+    bottom: 92px;
+    z-index: 91;
+    display: none;
+    flex-direction: column;
+    width: min(400px, calc(100vw - 32px));
+    max-height: min(700px, calc(100vh - 118px));
+    overflow: hidden;
+    border: 1px solid rgba(17, 17, 17, 0.12);
+    border-radius: 10px;
+    background: #ffffff;
+    color: #151817;
+    box-shadow: 0 24px 65px rgba(17, 17, 17, 0.22);
+    direction: rtl;
+}
+
+.himma-ai-panel.is-open {
+    display: flex;
+}
+
+.himma-ai-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 14px;
+    border-bottom: 1px solid rgba(17, 17, 17, 0.09);
+    background: linear-gradient(135deg, #101312, #0f7a3f);
+    color: #ffffff;
+}
+
+.himma-ai-title-wrap {
+    flex: 1;
+    min-width: 0;
+}
+
+.himma-ai-title {
+    margin: 0;
+    font-size: 1rem;
+    font-weight: 800;
+    line-height: 1.25;
+}
+
+.himma-ai-subtitle {
+    margin: 3px 0 0;
+    color: rgba(255, 255, 255, 0.76);
+    font-size: 0.78rem;
+}
+
+.himma-ai-close {
+    display: inline-grid;
+    place-items: center;
+    width: 34px;
+    height: 34px;
+    flex: 0 0 34px;
+    border: 1px solid rgba(255, 255, 255, 0.24);
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.1);
+    color: #ffffff;
+    cursor: pointer;
+}
+
+.himma-ai-body {
+    display: flex;
+    flex: 1;
+    min-height: 0;
+    flex-direction: column;
+    gap: 10px;
+    padding: 12px;
+}
+
+.himma-ai-controls {
+    display: grid;
+    gap: 8px;
+}
+
+.himma-ai-label {
+    color: #444b48;
+    font-size: 0.8rem;
+    font-weight: 700;
+}
+
+.himma-ai-select {
+    width: 100%;
+    min-height: 40px;
+    border: 1px solid rgba(17, 17, 17, 0.14);
+    border-radius: 8px;
+    background: #ffffff;
+    color: #151817;
+    padding: 8px 10px;
+    font: inherit;
+}
+
+.himma-ai-suggestions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 7px;
+}
+
+.himma-ai-chip,
+.himma-ai-clear,
+.himma-ai-send {
+    border-radius: 8px;
+    font: inherit;
+    cursor: pointer;
+}
+
+.himma-ai-chip {
+    border: 1px solid rgba(15, 122, 63, 0.2);
+    background: rgba(15, 122, 63, 0.08);
+    color: #123e28;
+    padding: 7px 9px;
+    font-size: 0.78rem;
+    font-weight: 700;
+}
+
+.himma-ai-messages {
+    display: flex;
+    flex: 1;
+    min-height: 210px;
+    overflow-y: auto;
+    flex-direction: column;
+    gap: 10px;
+    padding: 4px 2px;
+    scrollbar-width: thin;
+}
+
+.himma-ai-message {
+    width: fit-content;
+    max-width: 88%;
+    border-radius: 8px;
+    padding: 9px 11px;
+    line-height: 1.75;
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+    font-size: 0.9rem;
+}
+
+.himma-ai-message-user {
+    align-self: flex-start;
+    background: #111111;
+    color: #ffffff;
+}
+
+.himma-ai-message-bot {
+    align-self: flex-end;
+    border: 1px solid rgba(17, 17, 17, 0.08);
+    background: #f6f7f8;
+    color: #151817;
+}
+
+.himma-ai-message-error {
+    border-color: rgba(206, 17, 38, 0.25);
+    background: rgba(206, 17, 38, 0.08);
+    color: #7a1019;
+}
+
+.himma-ai-form {
+    display: grid;
+    gap: 8px;
+    border-top: 1px solid rgba(17, 17, 17, 0.08);
+    padding-top: 10px;
+}
+
+.himma-ai-input {
+    width: 100%;
+    min-height: 78px;
+    max-height: 150px;
+    resize: vertical;
+    border: 1px solid rgba(17, 17, 17, 0.14);
+    border-radius: 8px;
+    background: #ffffff;
+    color: #151817;
+    padding: 10px;
+    font: inherit;
+    line-height: 1.6;
+}
+
+.himma-ai-actions {
+    display: flex;
+    gap: 8px;
+}
+
+.himma-ai-send,
+.himma-ai-clear {
+    min-height: 40px;
+    padding: 8px 12px;
+    font-weight: 800;
+}
+
+.himma-ai-send {
+    flex: 1;
+    border: 1px solid #0f7a3f;
+    background: #0f7a3f;
+    color: #ffffff;
+}
+
+.himma-ai-clear {
+    border: 1px solid rgba(17, 17, 17, 0.13);
+    background: #ffffff;
+    color: #202423;
+}
+
+.himma-ai-status {
+    min-height: 18px;
+    color: #666666;
+    font-size: 0.76rem;
+}
+
+body.dark-mode .himma-ai-panel {
+    border-color: rgba(255, 255, 255, 0.14);
+    background: #0b0f0d;
+    color: #f7f7f7;
+    box-shadow: 0 24px 65px rgba(0, 0, 0, 0.48);
+}
+
+body.dark-mode .himma-ai-header {
+    border-bottom-color: rgba(255, 255, 255, 0.12);
+    background: linear-gradient(135deg, #050605, #0b5c32);
+}
+
+body.dark-mode .himma-ai-label,
+body.dark-mode .himma-ai-status {
+    color: rgba(255, 255, 255, 0.72);
+}
+
+body.dark-mode .himma-ai-select,
+body.dark-mode .himma-ai-input,
+body.dark-mode .himma-ai-clear {
+    border-color: rgba(255, 255, 255, 0.15);
+    background: #121715;
+    color: #ffffff;
+}
+
+body.dark-mode .himma-ai-message-bot {
+    border-color: rgba(255, 255, 255, 0.11);
+    background: #151b18;
+    color: #ffffff;
+}
+
+body.dark-mode .himma-ai-message-user {
+    background: #ffffff;
+    color: #111111;
+}
+
+body.dark-mode .himma-ai-chip {
+    border-color: rgba(255, 255, 255, 0.14);
+    background: rgba(15, 122, 63, 0.22);
+    color: #ffffff;
+}
+
+@media (max-width: 560px) {
+    .himma-ai-launcher {
+        right: 14px;
+        bottom: 14px;
+        min-height: 54px;
+        padding: 8px 11px;
+    }
+
+    .himma-ai-mark {
+        width: 40px;
+        height: 40px;
+        flex-basis: 40px;
+    }
+
+    .himma-ai-launcher-note {
+        display: none;
+    }
+
+    .himma-ai-panel {
+        right: 10px;
+        bottom: 78px;
+        width: calc(100vw - 20px);
+        max-height: calc(100vh - 96px);
+    }
+
+    .himma-ai-body {
+        padding: 10px;
+    }
+
+    .himma-ai-message {
+        max-width: 92%;
+        font-size: 0.86rem;
+    }
+}

@@ -1,0 +1,10 @@
+{
+  "name": "himma-site-auth-tools",
+  "private": true,
+  "scripts": {
+    "build": "node ai-knowledge/build-knowledge-base.mjs",
+    "build:knowledge": "node ai-knowledge/build-knowledge-base.mjs",
+    "bulk:create-auth-users": "node scripts/bulk-create-auth-users.mjs",
+    "member:add": "node scripts/add-member.mjs"
+  }
+}

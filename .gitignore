@@ -1,0 +1,14 @@
+.env
+.env.local
+.env.*
+!/.env.example
+*.pem
+*.key
+private/
+node_modules/
+backups/
+backup-before-ai-himma/
+*.zip
+assets/js/env.js
+assets/images/
+assets/images-manifest.json
