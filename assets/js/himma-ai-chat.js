@@ -6,6 +6,8 @@
         elements: {}
     };
 
+    const scriptConfig = document.currentScript;
+
     const copy = {
         ar: {
             launcherTitle: "AI همّة الوطني",
@@ -21,6 +23,8 @@
             empty: "اكتب سؤالك أولاً.",
             fallbackNotice: "تم استخدام الرد المحلي لأن الاتصال بالذكاء الاصطناعي غير متاح الآن.",
             error: "تعذر إرسال السؤال الآن. حاول مرة أخرى لاحقاً.",
+            backendReady: "AI همّة الذكي جاهز من الواجهة، ويحتاج تفعيل الخادم الخلفي الآمن قبل استقبال الأسئلة.",
+            backendError: "تعذر الوصول إلى الخادم الخلفي الآمن حاليًا. حاول مرة أخرى لاحقًا.",
             welcome: "أهلاً بك في AI همّة الوطني، مساعدك الذكي للتعرّف على مبادرة همّة الوطنية والثقافة الوطنية والتاريخ الأردني.",
             suggestions: [
                 "ما هي مبادرة همّة الوطنية؟",
@@ -53,6 +57,8 @@
             empty: "Write your question first.",
             fallbackNotice: "Local fallback was used because AI connection is not available now.",
             error: "Could not send the question now. Try again later.",
+            backendReady: "AI Himma is ready in the interface and requires a secure backend before it can receive questions.",
+            backendError: "Could not reach the secure backend now. Please try again later.",
             welcome: "Welcome to AI Himma National, your smart assistant for learning about Himma National Initiative, national culture, and Jordanian history.",
             suggestions: [
                 "What is Himma National Initiative?",
@@ -293,6 +299,14 @@
         state.elements.status.textContent = message || "";
     }
 
+    function aiEndpoint() {
+        const fromWindow = typeof window.HIMMA_AI_ENDPOINT === "string" ? window.HIMMA_AI_ENDPOINT.trim() : "";
+        const fromScript = scriptConfig && scriptConfig.dataset ? String(scriptConfig.dataset.aiEndpoint || "").trim() : "";
+        const fromMeta = document.querySelector('meta[name="himma-ai-endpoint"]');
+        const fromMetaValue = fromMeta ? String(fromMeta.getAttribute("content") || "").trim() : "";
+        return fromWindow || fromScript || fromMetaValue;
+    }
+
     function visitorId() {
         const key = "himma_ai_visitor_id";
         let value = window.localStorage.getItem(key);
@@ -416,9 +430,39 @@
     }
 
     function backendDisabledMessage() {
-        return state.language === "en"
-            ? "AI assistant service is currently disabled on GitHub Pages because it requires a backend."
-            : "خدمة المساعد الذكي غير مفعلة حاليًا على GitHub Pages لأنها تحتاج Backend.";
+        return currentCopy().backendReady;
+    }
+
+    async function requestAiAnswer(question) {
+        const endpoint = aiEndpoint();
+        if (!endpoint) {
+            return { disabled: true, answer: backendDisabledMessage() };
+        }
+
+        const payload = {
+            question,
+            language: state.language,
+            dialect: state.elements.select.value || "jordanian",
+            visitor_id: visitorId(),
+            ...(await authPayload())
+        };
+
+        const response = await fetch(endpoint, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload)
+        });
+
+        if (!response.ok) {
+            throw new Error(`AI endpoint responded with ${response.status}`);
+        }
+
+        const data = await response.json().catch(() => ({}));
+        const answer = data.answer || data.reply || data.message;
+        if (!answer || typeof answer !== "string") {
+            throw new Error("AI endpoint response did not include an answer.");
+        }
+        return { answer };
     }
 
     async function sendQuestion(rawQuestion) {
@@ -440,10 +484,15 @@
         const pending = appendMessage("bot", text.thinking);
 
         try {
-            pending.textContent = backendDisabledMessage();
+            const result = await requestAiAnswer(question);
+            pending.textContent = result.answer;
+            if (result.disabled) {
+                setStatus("");
+            }
         } catch (error) {
-            pending.textContent = backendDisabledMessage();
-            setStatus(text.fallbackNotice || text.error);
+            pending.textContent = text.backendError || text.error;
+            pending.classList.add("himma-ai-message-error");
+            setStatus(text.error);
         } finally {
             state.isSending = false;
             state.elements.send.disabled = false;
