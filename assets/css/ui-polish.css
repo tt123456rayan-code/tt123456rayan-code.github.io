@@ -1288,3 +1288,103 @@ body.dark-mode .president-home-portrait {
         transition-duration: 1ms !important;
     }
 }
+
+/* Production 3D hero logo stage */
+#home .hero-grid {
+    grid-template-columns: minmax(0, 1.18fr) minmax(340px, 0.82fr) !important;
+    align-items: center !important;
+}
+
+#home .hero-logo-showcase {
+    --tilt-x: 0deg;
+    --tilt-y: 0deg;
+    position: relative !important;
+    display: grid !important;
+    place-items: center !important;
+    min-height: clamp(460px, 44vw, 620px) !important;
+    padding: 0 !important;
+    overflow: visible !important;
+    isolation: isolate !important;
+    border: 0 !important;
+    border-radius: 0 !important;
+    background: transparent !important;
+    box-shadow: none !important;
+    transform: none !important;
+}
+
+#home .hero-logo-showcase::before,
+#home .hero-logo-showcase::after {
+    content: none !important;
+    display: none !important;
+}
+
+#home .hero-logo-showcase > img,
+#home .himma-hero-model {
+    display: none !important;
+}
+
+#home .hero-3d-stage {
+    position: relative;
+    width: min(100%, 560px);
+    height: clamp(460px, 44vw, 620px);
+    display: grid;
+    place-items: center;
+    overflow: visible;
+    contain: layout paint;
+}
+
+#home .hero-3d-stage::before {
+    content: "";
+    position: absolute;
+    inset: 8% 2% 4%;
+    z-index: -1;
+    pointer-events: none;
+    background:
+        radial-gradient(ellipse at 50% 44%, rgba(255, 255, 255, 0.18), transparent 28%),
+        radial-gradient(ellipse at 58% 56%, rgba(0, 122, 61, 0.24), transparent 48%),
+        radial-gradient(ellipse at 35% 64%, rgba(206, 17, 38, 0.1), transparent 46%);
+    filter: blur(28px);
+    opacity: 0.78;
+}
+
+#home .hero-3d-stage[data-state="failed"] {
+    display: none;
+}
+
+#home .hero-3d-canvas {
+    position: relative;
+    z-index: 1;
+    display: block;
+    width: 100%;
+    height: 100%;
+    filter: drop-shadow(0 30px 42px rgba(0, 0, 0, 0.36));
+}
+
+@media (max-width: 920px) {
+    #home .hero-grid {
+        grid-template-columns: 1fr !important;
+    }
+
+    #home .hero-logo-showcase {
+        width: min(100%, 620px);
+        min-height: clamp(360px, 56vw, 460px) !important;
+        margin-inline: auto;
+    }
+
+    #home .hero-3d-stage {
+        width: min(100%, 460px);
+        height: clamp(360px, 56vw, 460px);
+    }
+}
+
+@media (max-width: 620px) {
+    #home .hero-logo-showcase {
+        min-height: clamp(260px, 78vw, 340px) !important;
+        padding: 0 !important;
+    }
+
+    #home .hero-3d-stage {
+        width: min(100%, 360px);
+        height: clamp(260px, 78vw, 340px);
+    }
+}

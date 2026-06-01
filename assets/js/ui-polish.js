@@ -53,43 +53,4 @@
         window.addEventListener("scroll", updateHeader, { passive: true });
     }
 
-    const logoPanel = document.querySelector("#home .hero-logo-showcase");
-    const heroModel = logoPanel?.querySelector(".himma-hero-model");
-    if (logoPanel && heroModel) {
-        heroModel.addEventListener("error", () => {
-            logoPanel.classList.add("model-failed");
-        }, { once: true });
-
-        heroModel.addEventListener("load", () => {
-            logoPanel.classList.add("model-ready");
-            const materials = heroModel.model?.materials || [];
-            materials.forEach((material) => {
-                const name = material.name || "";
-                const color = name.includes("green")
-                    ? [0, 0.48, 0.22, 1]
-                    : name.includes("red")
-                        ? [0.82, 0.04, 0.1, 1]
-                        : [0.02, 0.025, 0.022, 1];
-                material.setDoubleSided?.(true);
-                material.pbrMetallicRoughness?.setBaseColorFactor?.(color);
-                material.pbrMetallicRoughness?.setMetallicFactor?.(0.02);
-                material.pbrMetallicRoughness?.setRoughnessFactor?.(0.38);
-            });
-        }, { once: true });
-
-        if (!reduceMotion) {
-            logoPanel.addEventListener("pointermove", (event) => {
-                const rect = logoPanel.getBoundingClientRect();
-                const x = (event.clientX - rect.left) / rect.width - 0.5;
-                const y = (event.clientY - rect.top) / rect.height - 0.5;
-                logoPanel.style.setProperty("--tilt-x", `${(-y * 4).toFixed(2)}deg`);
-                logoPanel.style.setProperty("--tilt-y", `${(x * 5).toFixed(2)}deg`);
-            }, { passive: true });
-
-            logoPanel.addEventListener("pointerleave", () => {
-                logoPanel.style.setProperty("--tilt-x", "0deg");
-                logoPanel.style.setProperty("--tilt-y", "0deg");
-            });
-        }
-    }
 })();
