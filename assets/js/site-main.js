@@ -51,6 +51,80 @@
                     img.dataset.lightSrc = primaryLogoSrc;
                 }
             });
+
+            function applyDocumentDirection(language) {
+                const normalizedLanguage = language === "en" ? "en" : "ar";
+                const direction = normalizedLanguage === "en" ? "ltr" : "rtl";
+                document.documentElement.lang = normalizedLanguage;
+                document.documentElement.dir = direction;
+                document.body.lang = normalizedLanguage;
+                document.body.dir = direction;
+                document.body.classList.toggle("language-en", normalizedLanguage === "en");
+                document.body.classList.toggle("language-ar", normalizedLanguage !== "en");
+            }
+
+            function resolveArabicText(text) {
+                if (translations[text]) {
+                    return text;
+                }
+                const match = Object.keys(translations).find((key) => translations[key] === text);
+                return match || text;
+            }
+
+            function applyLogoMode() {
+                const isDark = document.body.classList.contains("dark-mode");
+                [...logoImages, ...authLogoImages].forEach((img) => {
+                    const lightSrc = img.dataset.lightSrc || primaryLogoSrc;
+                    const nextSrc = isDark && darkLogoSrc ? darkLogoSrc : lightSrc;
+                    if (nextSrc && img.getAttribute("src") !== nextSrc) {
+                        img.setAttribute("src", nextSrc);
+                    }
+                    if (!img.closest(".brand-button")) {
+                        img.loading = "lazy";
+                    }
+                    img.decoding = "async";
+                });
+            }
+
+            function readAnalytics() {
+                try {
+                    return JSON.parse(localStorage.getItem("himma_analytics_v1")) || {};
+                } catch (_) {
+                    return {};
+                }
+            }
+
+            function trackSiteEvent(name, detail = {}) {
+                try {
+                    const state = readAnalytics();
+                    const device = window.matchMedia("(max-width: 760px)").matches ? "mobile" : "desktop";
+                    state.visits = state.visits || 0;
+                    state.sections = state.sections || {};
+                    state.actions = state.actions || {};
+                    state.devices = state.devices || { mobile: 0, desktop: 0 };
+                    if (name === "visit") {
+                        state.visits += 1;
+                        state.devices[device] = (state.devices[device] || 0) + 1;
+                    }
+                    if (detail.section) {
+                        state.sections[detail.section] = (state.sections[detail.section] || 0) + 1;
+                    }
+                    if (name !== "visit") {
+                        state.actions[name] = (state.actions[name] || 0) + 1;
+                    }
+                    state.lastEvent = name;
+                    state.lastSection = detail.section || state.lastSection || "";
+                    state.lastDevice = device;
+                    state.updatedAt = new Date().toISOString();
+                    localStorage.setItem("himma_analytics_v1", JSON.stringify(state));
+                } catch (_) {
+                    // Analytics is intentionally local-only and must never block the site.
+                }
+            }
+            window.HIMMA_ANALYTICS = {
+                snapshot: readAnalytics,
+                track: trackSiteEvent
+            };
             const committeeDetails = {
                 all: { ar: { title: "عرض الكل", copy: "يعرض كامل بطاقات الهيكل الإداري مع ملخص سريع عن الأدوار الرئيسية داخل المبادرة.", items: ["الرئاسة والمستشارون والأمانة العامة", "رؤساء اللجان ونوابهم عند توفرهم"] }, en: { title: "View All", copy: "Shows all administrative structure cards with a quick summary of the initiative's main roles.", items: ["Presidency, advisors, and general secretariat", "Committee chairs and deputies where available"] } },
                 administrative: { ar: { title: "اللجنة الإدارية", copy: "تضم قيادة المبادرة والمستشارين والأمين العام لضبط الرؤية والتنظيم والمتابعة.", items: ["رئيس المبادرة", "المستشارون والأمين العام"] }, en: { title: "Administrative Committee", copy: "Includes the initiative leadership, advisors, and secretary general for vision, organization, and follow-up.", items: ["President of the initiative", "Advisors and secretary general"] } },
@@ -350,16 +424,15 @@
             }
 
             function setLanguage(language) {
-                currentLanguage = language;
-                document.documentElement.lang = language;
-                document.documentElement.dir = language === "en" ? "ltr" : "rtl";
-                document.title = language === "en" ? translations["مبادرة همّة | الموقع الرسمي"] : "مبادرة همّة | الموقع الرسمي";
+                currentLanguage = language === "en" ? "en" : "ar";
+                applyDocumentDirection(currentLanguage);
+                document.title = currentLanguage === "en" ? translations["مبادرة همّة | الموقع الرسمي"] : "مبادرة همّة | الموقع الرسمي";
                 if (languageButton) {
-                    languageButton.textContent = language === "en" ? "AR" : "EN";
+                    languageButton.textContent = currentLanguage === "en" ? "AR" : "EN";
                 }
                 if (themeToggle) {
                     const isDark = document.body.classList.contains("dark-mode");
-                    themeToggle.textContent = language === "en" ? (isDark ? "Light Mode" : "Dark Mode") : (isDark ? "الوضع الفاتح" : "الوضع الداكن");
+                    themeToggle.textContent = currentLanguage === "en" ? (isDark ? "Light Mode" : "Dark Mode") : (isDark ? "الوضع الفاتح" : "الوضع الداكن");
                 }
                 const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT);
                 const nodes = [];
@@ -367,20 +440,23 @@
                     nodes.push(walker.currentNode);
                 }
                 nodes.forEach((node) => {
+                    if (!node.parentElement || node.parentElement.closest("script, style, noscript, textarea")) {
+                        return;
+                    }
                     const trimmed = node.nodeValue.trim();
                     if (!trimmed) return;
                     if (!node.__arText) {
-                        node.__arText = trimmed;
+                        node.__arText = resolveArabicText(trimmed);
                     }
                     const sourceText = node.__arText;
-                    const nextText = language === "en" ? translations[sourceText] || sourceText : sourceText;
+                    const nextText = currentLanguage === "en" ? translations[sourceText] || sourceText : sourceText;
                     node.nodeValue = node.nodeValue.replace(trimmed, nextText);
                 });
                 document.querySelectorAll("[data-en]").forEach((element) => {
                     if (!element.dataset.ar) {
                         element.dataset.ar = element.textContent.trim();
                     }
-                    element.textContent = language === "en" ? element.dataset.en : element.dataset.ar;
+                    element.textContent = currentLanguage === "en" ? element.dataset.en : element.dataset.ar;
                 });
                 const activeStructureTab = structureTabs.find((tab) => tab.classList.contains("is-active"));
                 if (activeStructureTab) {
@@ -392,6 +468,7 @@
 
             function showSection(sectionId, updateHash = true) {
                 const targetId = pageIds.has(sectionId) ? sectionId : "home";
+                trackSiteEvent("section_view", { section: targetId });
 
                 pages.forEach((page) => {
                     page.hidden = page.id !== targetId;
@@ -698,9 +775,8 @@
                 themeToggle.addEventListener("click", () => {
                     const isDark = document.body.classList.toggle("dark-mode");
                     themeToggle.textContent = currentLanguage === "en" ? (isDark ? "Light Mode" : "Dark Mode") : (isDark ? "الوضع الفاتح" : "الوضع الداكن");
-                    [...logoImages, ...authLogoImages].forEach((img) => {
-                        img.setAttribute("src", isDark ? darkLogoSrc : img.dataset.lightSrc);
-                    });
+                    applyLogoMode();
+                    trackSiteEvent("theme_toggle", { section: window.location.hash.replace("#", "") || "home" });
                 });
             }
 
@@ -712,6 +788,12 @@
 
             navTriggers.forEach((trigger) => {
                 trigger.addEventListener("click", () => {
+                    if (trigger.dataset.section === "join") {
+                        trackSiteEvent("join_navigation_click", { section: "join" });
+                    }
+                    if (trigger.dataset.section === "contact") {
+                        trackSiteEvent("contact_navigation_click", { section: "contact" });
+                    }
                     showSection(trigger.dataset.section);
                     setMainNavOpen(false);
                 });
@@ -747,17 +829,43 @@
                     message.textContent = "";
 
                     const formData = new FormData(form);
+                    const fullName = String(formData.get("fullName") || "").trim();
+                    const phone = String(formData.get("phone") || "").trim();
+                    const governorate = String(formData.get("governorate") || "").trim();
+                    const committee = String(formData.get("committee") || "").trim();
+                    const courses = String(formData.get("courses") || "").trim();
+                    const motivation = String(formData.get("motivation") || "").trim();
+                    const skills = String(formData.get("skills") || "").trim();
+                    const availability = String(formData.get("availability") || "").trim();
+                    const unsafePattern = /<|>|javascript:|data:/i;
+                    const lengthInvalid =
+                        fullName.length < 3 || fullName.length > 120 ||
+                        phone.length < 7 || phone.length > 24 ||
+                        governorate.length < 2 || governorate.length > 80 ||
+                        committee.length < 2 || committee.length > 120 ||
+                        motivation.length < 10 || motivation.length > 2000 ||
+                        courses.length > 2000 ||
+                        skills.length > 2000 ||
+                        availability.length > 1000;
+                    if (lengthInvalid || unsafePattern.test([fullName, phone, governorate, committee, courses, motivation, skills, availability].join(" "))) {
+                        message.textContent = currentLanguage === "en" ? "Please review the entered information and try again." : "يرجى مراجعة البيانات المدخلة والمحاولة مرة أخرى.";
+                        if (submitButton) {
+                            submitButton.disabled = false;
+                            submitButton.textContent = originalButtonText;
+                        }
+                        return;
+                    }
                     const payload = {
-                        full_name: String(formData.get("fullName") || "").trim(),
+                        full_name: fullName,
                         age: ageValue,
-                        phone: String(formData.get("phone") || "").trim(),
-                        governorate: String(formData.get("governorate") || "").trim(),
-                        committee: String(formData.get("committee") || "").trim(),
-                        courses: String(formData.get("courses") || "").trim() || null,
-                        motivation: String(formData.get("motivation") || "").trim(),
-                        skills: String(formData.get("skills") || "").trim() || null,
-                        availability: String(formData.get("availability") || "").trim() || null,
-                        page_url: window.location.href,
+                        phone,
+                        governorate,
+                        committee,
+                        courses: courses || null,
+                        motivation,
+                        skills: skills || null,
+                        availability: availability || null,
+                        page_url: window.location.origin + window.location.pathname,
                         user_agent: navigator.userAgent
                     };
 
@@ -775,9 +883,10 @@
                         if (!response.ok) {
                             throw new Error("Join request insert failed");
                         }
+                        trackSiteEvent("join_submit_success", { section: "join" });
                         window.location.href = "thank-you.html";
-                    } catch (error) {
-                        console.error("Join request failed", error);
+                    } catch (_) {
+                        trackSiteEvent("join_submit_error", { section: "join" });
                         message.textContent = currentLanguage === "en" ? "We could not send the request right now. Please try again shortly." : "تعذر إرسال الطلب حالياً. يرجى المحاولة بعد قليل.";
                     } finally {
                         if (submitButton) {
@@ -852,6 +961,10 @@
             window.addEventListener("hashchange", () => {
                 showSection(window.location.hash.replace("#", ""), false);
             });
+
+            applyDocumentDirection(currentLanguage);
+            applyLogoMode();
+            trackSiteEvent("visit", { section: window.location.hash.replace("#", "") || "home" });
 
             const initialSection = window.location.hash.replace("#", "");
             if (initialSection) {

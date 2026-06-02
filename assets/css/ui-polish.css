@@ -14,6 +14,40 @@ html {
     scroll-padding-top: clamp(78px, 10vw, 118px);
 }
 
+html[dir="rtl"],
+html[dir="rtl"] body {
+    direction: rtl;
+    text-align: right;
+}
+
+html[dir="ltr"],
+html[dir="ltr"] body {
+    direction: ltr;
+    text-align: left;
+}
+
+html[dir="rtl"] input,
+html[dir="rtl"] textarea,
+html[dir="rtl"] select {
+    direction: rtl;
+    text-align: right;
+}
+
+html[dir="ltr"] input,
+html[dir="ltr"] textarea,
+html[dir="ltr"] select {
+    direction: ltr;
+    text-align: left;
+}
+
+html[dir="ltr"] .header-inner,
+html[dir="ltr"] .main-nav,
+html[dir="ltr"] .hero-actions,
+html[dir="ltr"] .contact-grid,
+html[dir="ltr"] .profile-grid {
+    direction: ltr;
+}
+
 body,
 .site-header,
 .page,
@@ -35,6 +69,12 @@ select {
     width: 100%;
     min-height: 100vh;
     overflow-x: clip;
+}
+
+@supports not (overflow: clip) {
+    .site-shell {
+        overflow-x: hidden;
+    }
 }
 
 .site-header {
@@ -586,6 +626,17 @@ body {
     display: none !important;
 }
 
+@supports (content-visibility: auto) {
+    .page {
+        content-visibility: auto;
+        contain-intrinsic-size: 900px;
+    }
+
+    .page[hidden] {
+        content-visibility: hidden;
+    }
+}
+
 .section-title {
     max-width: 980px;
     margin-inline: auto;
@@ -889,6 +940,44 @@ body.dark-mode .site-footer {
     box-shadow: 0 14px 34px rgba(0, 0, 0, 0.26);
 }
 
+body.dark-mode {
+    color: #f4f7f5;
+}
+
+body.dark-mode p,
+body.dark-mode li,
+body.dark-mode .section-lead,
+body.dark-mode .counter-label,
+body.dark-mode .committee-detail-copy,
+body.dark-mode .profile-role,
+body.dark-mode .contact-card p,
+body.dark-mode .site-footer p {
+    color: rgba(255, 255, 255, 0.84);
+}
+
+body.dark-mode .nav-button,
+body.dark-mode .language-button,
+body.dark-mode .theme-toggle,
+body.dark-mode .form-card label,
+body.dark-mode .auth-card label,
+body.dark-mode .dashboard-section h3,
+body.dark-mode .committee-directory-card h3 {
+    color: #f8faf9;
+}
+
+body.dark-mode input,
+body.dark-mode textarea,
+body.dark-mode select {
+    color: #ffffff;
+    background-color: #0d1411;
+    border-color: rgba(255, 255, 255, 0.22);
+}
+
+body.dark-mode input::placeholder,
+body.dark-mode textarea::placeholder {
+    color: rgba(255, 255, 255, 0.62);
+}
+
 @media (min-width: 1440px) {
     .page,
     .site-footer {
@@ -1052,6 +1141,20 @@ body.dark-mode .president-home-portrait {
     background: color-mix(in srgb, var(--dark-card, #101a16) 88%, var(--brand-green, #00843d) 12%);
     border-color: color-mix(in srgb, var(--brand-green, #00843d) 42%, transparent);
     box-shadow: 0 18px 45px rgba(0, 0, 0, 0.26);
+}
+
+@supports not (background: color-mix(in srgb, #000 50%, #fff)) {
+    .president-home-portrait,
+    .president-home-note {
+        border-color: rgba(0, 122, 61, 0.28);
+        background: #ffffff;
+    }
+
+    body.dark-mode .president-home-portrait,
+    body.dark-mode .president-home-note {
+        border-color: rgba(0, 122, 61, 0.5);
+        background: #101a16;
+    }
 }
 
 @media (max-width: 820px) {
