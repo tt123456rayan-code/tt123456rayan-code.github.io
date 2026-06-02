@@ -978,6 +978,54 @@ body.dark-mode textarea::placeholder {
     color: rgba(255, 255, 255, 0.62);
 }
 
+body.dark-mode #home .logo-panel img.night-logo-active,
+body.dark-mode .auth-logo.night-logo-active,
+body.dark-mode .dashboard-logo.night-logo-active {
+    width: min(360px, 72vw);
+    max-height: 150px;
+    object-fit: contain;
+    padding: 10px 14px;
+    border-radius: 10px;
+    background: rgba(255, 255, 255, 0.04);
+    filter: brightness(0) invert(1) drop-shadow(0 14px 24px rgba(0, 122, 61, 0.18));
+}
+
+.dashboard-top {
+    grid-template-columns: minmax(0, 1fr) auto;
+}
+
+.dashboard-brand {
+    grid-column: 1;
+    min-width: 0;
+}
+
+.dashboard-menu-button {
+    grid-column: 2;
+    flex: 0 0 auto;
+}
+
+.dashboard-brand .dashboard-logo {
+    width: clamp(150px, 22vw, 230px);
+    max-height: 96px;
+    object-fit: contain;
+}
+
+.dashboard-menu-button.is-open {
+    border-color: rgba(0, 122, 61, 0.55);
+    box-shadow: 0 0 0 3px rgba(0, 122, 61, 0.16);
+}
+
+@media (max-width: 720px) {
+    .dashboard-top {
+        grid-template-columns: minmax(0, 1fr) auto;
+    }
+
+    .dashboard-brand .dashboard-logo {
+        width: clamp(118px, 36vw, 170px);
+        max-height: 72px;
+    }
+}
+
 @media (min-width: 1440px) {
     .page,
     .site-footer {

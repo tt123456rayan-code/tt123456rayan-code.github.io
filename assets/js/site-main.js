@@ -16,6 +16,10 @@
             const profileMembership = document.getElementById("profile-membership");
             const profileCommittee = document.getElementById("profile-committee");
             const profileRole = document.getElementById("profile-role");
+            const dashboardMenuToggle = document.getElementById("dashboard-menu-toggle");
+            const dashboardMenu = document.getElementById("dashboard-menu");
+            const dashboardViewButtons = Array.from(document.querySelectorAll("[data-dashboard-view]"));
+            const dashboardPanels = Array.from(document.querySelectorAll("[id^='dashboard-'][id$='-panel']"));
             const dashboardLogout = document.getElementById("dashboard-logout");
             const structureTabs = Array.from(document.querySelectorAll("[data-structure-filter]"));
             const structureCards = Array.from(document.querySelectorAll("[data-structure-groups]"));
@@ -79,6 +83,7 @@
                     if (nextSrc && img.getAttribute("src") !== nextSrc) {
                         img.setAttribute("src", nextSrc);
                     }
+                    img.classList.toggle("night-logo-active", Boolean(isDark && darkLogoSrc));
                     if (!img.closest(".brand-button")) {
                         img.loading = "lazy";
                     }
@@ -495,6 +500,29 @@
                 window.scrollTo({ top: 0, left: 0 });
             }
 
+            function setDashboardMenuOpen(open) {
+                if (!dashboardMenuToggle || !dashboardMenu) {
+                    return;
+                }
+                dashboardMenu.hidden = !open;
+                dashboardMenuToggle.classList.toggle("is-open", open);
+                dashboardMenuToggle.setAttribute("aria-expanded", String(open));
+            }
+
+            function setDashboardView(view) {
+                const selectedView = view || "profile";
+                dashboardPanels.forEach((panel) => {
+                    panel.hidden = panel.id !== `dashboard-${selectedView}-panel`;
+                });
+                dashboardViewButtons.forEach((button) => {
+                    const active = button.dataset.dashboardView === selectedView;
+                    button.classList.toggle("is-active", active);
+                    button.setAttribute("aria-pressed", String(active));
+                });
+                setDashboardMenuOpen(false);
+                trackSiteEvent("dashboard_view", { section: selectedView });
+            }
+
 
             function setCommitteeArticle(target) {
                 if (!committeeDirectoryCards.length || !committeeArticlePanels.length) {
@@ -799,6 +827,25 @@
                 });
             });
 
+            if (dashboardMenuToggle && dashboardMenu) {
+                dashboardMenuToggle.addEventListener("click", (event) => {
+                    event.stopPropagation();
+                    setDashboardMenuOpen(dashboardMenu.hidden);
+                });
+                document.addEventListener("click", (event) => {
+                    if (!dashboardMenu.hidden && !dashboardMenu.contains(event.target) && !dashboardMenuToggle.contains(event.target)) {
+                        setDashboardMenuOpen(false);
+                    }
+                });
+            }
+
+            dashboardViewButtons.forEach((button) => {
+                button.addEventListener("click", () => {
+                    setDashboardView(button.dataset.dashboardView);
+                });
+            });
+            setDashboardView("profile");
+
             if (form) {
                 form.addEventListener("submit", async (event) => {
                     event.preventDefault();
@@ -934,6 +981,7 @@
                         if (memberPasswordInput) {
                             memberPasswordInput.value = "";
                         }
+                        setDashboardView("profile");
                         showSection("dashboard");
                     } catch (_) {
                         if (loginMessage) {
