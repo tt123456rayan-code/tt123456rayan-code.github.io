@@ -21,10 +21,9 @@
             clear: "مسح المحادثة",
             thinking: "جار تجهيز الإجابة...",
             empty: "اكتب سؤالك أولاً.",
-            fallbackNotice: "تم استخدام الرد المحلي لأن الاتصال بالذكاء الاصطناعي غير متاح الآن.",
-            error: "تعذر إرسال السؤال الآن. حاول مرة أخرى لاحقاً.",
-            backendReady: "AI همّة الذكي جاهز من الواجهة، ويحتاج تفعيل الخادم الخلفي الآمن قبل استقبال الأسئلة.",
-            backendError: "تعذر الوصول إلى الخادم الخلفي الآمن حاليًا. حاول مرة أخرى لاحقًا.",
+            fallbackNotice: "لم أجد إجابة دقيقة لهذا السؤال حاليًا، يرجى التواصل مع فريق المبادرة.",
+            error: "خدمة المساعد غير متاحة مؤقتًا، يرجى المحاولة لاحقًا.",
+            noAnswer: "لم أجد إجابة دقيقة لهذا السؤال حاليًا، يرجى التواصل مع فريق المبادرة.",
             welcome: "أهلاً بك في AI همّة الوطني، مساعدك الذكي للتعرّف على مبادرة همّة الوطنية والثقافة الوطنية والتاريخ الأردني.",
             suggestions: [
                 "ما هي مبادرة همّة الوطنية؟",
@@ -55,10 +54,9 @@
             clear: "Clear chat",
             thinking: "Preparing the answer...",
             empty: "Write your question first.",
-            fallbackNotice: "Local fallback was used because AI connection is not available now.",
-            error: "Could not send the question now. Try again later.",
-            backendReady: "AI Himma is ready in the interface and requires a secure backend before it can receive questions.",
-            backendError: "Could not reach the secure backend now. Please try again later.",
+            fallbackNotice: "I could not find an accurate answer for this question right now. Please contact the initiative team.",
+            error: "The assistant service is temporarily unavailable. Please try again later.",
+            noAnswer: "I could not find an accurate answer for this question right now. Please contact the initiative team.",
             welcome: "Welcome to AI Himma National, your smart assistant for learning about Himma National Initiative, national culture, and Jordanian history.",
             suggestions: [
                 "What is Himma National Initiative?",
@@ -299,39 +297,6 @@
         state.elements.status.textContent = message || "";
     }
 
-    function aiEndpoint() {
-        const fromWindow = typeof window.HIMMA_AI_ENDPOINT === "string" ? window.HIMMA_AI_ENDPOINT.trim() : "";
-        const fromScript = scriptConfig && scriptConfig.dataset ? String(scriptConfig.dataset.aiEndpoint || "").trim() : "";
-        const fromMeta = document.querySelector('meta[name="himma-ai-endpoint"]');
-        const fromMetaValue = fromMeta ? String(fromMeta.getAttribute("content") || "").trim() : "";
-        return fromWindow || fromScript || fromMetaValue;
-    }
-
-    function visitorId() {
-        const key = "himma_ai_visitor_id";
-        let value = window.localStorage.getItem(key);
-        if (!value) {
-            value = `visitor-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
-            window.localStorage.setItem(key, value);
-        }
-        return value;
-    }
-
-    async function authPayload() {
-        const client = window.HIMMA_SUPABASE_CLIENT;
-        if (!client || !client.auth || !client.auth.getSession) {
-            return {};
-        }
-        try {
-            const { data } = await client.auth.getSession();
-            return data && data.session && data.session.user
-                ? { user_id: data.session.user.id, plan: "member" }
-                : {};
-        } catch (_) {
-            return {};
-        }
-    }
-
     function normalizeArabic(value) {
         return String(value || "")
             .toLowerCase()
@@ -345,124 +310,79 @@
             .trim();
     }
 
-    function includesAny(value, terms) {
-        const normalized = normalizeArabic(value);
-        return terms.some((term) => normalized.includes(normalizeArabic(term)));
+    function tokenize(value) {
+        return normalizeArabic(value).split(" ").filter((part) => part.length > 1);
     }
 
-    function forcedLocalAnswer(question) {
-        const q = normalizeArabic(question);
-        const isEnglish = state.language === "en";
-        if (isEnglish) {
-            return "";
+    function scoreKnowledgeRow(row, question) {
+        const normalizedQuestion = normalizeArabic(question);
+        const rowQuestion = normalizeArabic(row.question);
+        const rowCategory = normalizeArabic(row.category);
+        const keywords = Array.isArray(row.keywords) ? row.keywords : [];
+        const questionTerms = tokenize(question);
+        let score = 0;
+
+        if (rowQuestion === normalizedQuestion) {
+            score += 100;
         }
-
-        const mediaAsked = includesAny(q, ["لجنة الاعلام", "الاعلام", "hook jo", "هوك جو", "شهد سنجق"]);
-        const wantsDeputies = includesAny(q, ["نواب الرؤساء", "نواب الرئساء", "كل النواب", "النواب", "نائب", "نائبة"]);
-        const wantsChairs = includesAny(q, ["رؤساء اللجان", "رئساء اللجان", "كل الرؤساء", "كل الرئساء", "الرؤساء", "الرئساء"]);
-        const wantsChair = includesAny(q, ["رئيس", "ريس", "مين", "من هو", "من هي"]);
-
-        if (mediaAsked) {
-            if (wantsDeputies) {
-                return "نائب رئيس لجنة الإعلام المتوفر في بيانات الموقع هي شهد سنجق (ممثلة الشركة)، كما يظهر Hook Jo كداعم لمبادرة همّة ضمن لجنة الإعلام.";
+        if (rowQuestion.includes(normalizedQuestion) || normalizedQuestion.includes(rowQuestion)) {
+            score += 45;
+        }
+        keywords.forEach((keyword) => {
+            const normalizedKeyword = normalizeArabic(keyword);
+            if (normalizedKeyword && normalizedQuestion.includes(normalizedKeyword)) {
+                score += 28;
             }
-            if (wantsChair) {
-                return "لا يظهر في بيانات الموقع رئيس للجنة الإعلام حالياً. المتوفر أن شهد سنجق هي نائب رئيس لجنة الإعلام (ممثلة الشركة)، و Hook Jo داعم مبادرة همّة ضمن لجنة الإعلام.";
+        });
+        questionTerms.forEach((term) => {
+            if (rowQuestion.includes(term)) {
+                score += 8;
             }
-            return "لجنة الإعلام تدير المحتوى والتغطيات والسرد الإعلامي والهوية الاتصالية للمبادرة، وتهدف إلى تقديم أثر همّة بوضوح ومهنية وبأسلوب قريب من لغة الشباب. المتوفر في بيانات اللجنة: شهد سنجق نائب رئيس لجنة الإعلام (ممثلة الشركة)، و Hook Jo داعم مبادرة همّة ضمن لجنة الإعلام.";
-        }
+            if (rowCategory.includes(term)) {
+                score += 5;
+            }
+            keywords.forEach((keyword) => {
+                if (normalizeArabic(keyword).includes(term)) {
+                    score += 6;
+                }
+            });
+        });
 
-        if (includesAny(q, ["رئيس المبادرة", "ريس المبادرة", "عمر دقروق", "عمر"]) && wantsChair) {
-            return "رئيس مبادرة همّة هو عمر دقروق، حسب بيانات مبادرة همّة الوطنية.";
-        }
-
-        if (wantsDeputies && !mediaAsked) {
-            return [
-                "نواب الرؤساء المتوفرون في بيانات الموقع هم:",
-                "لجنة الصحة: سلين بكر (نائبة رئيس لجنة الصحة)",
-                "لجنة الشؤون القانونية: ايوب احمد عبد السكارنه (نائب رئيس لجنة القانون)",
-                "لجنة الإعلام: شهد سنجق (نائب رئيس لجنة الإعلام - ممثلة الشركة)"
-            ].join("\n");
-        }
-
-        if (wantsChairs && !wantsDeputies) {
-            return [
-                "الرؤساء المتوفرون في بيانات مبادرة همّة الوطنية هم:",
-                "مبادرة همّة الوطنية: عمر دقروق (رئيس مبادرة همّة)",
-                "لجنة التكنولوجيا والابتكار: ريّان عبد القادر ابوجاموس (رئيس لجنة التكنولوجيا والابتكار)",
-                "لجنة الصحة: مها دكيدك (رئيسة لجنة الصحة)",
-                "لجنة الشؤون القانونية: رؤى النشاش (رئيسة لجنة الشؤون القانونية)",
-                "لجنة البيئة: جمان الزغل (رئيسة لجنة البيئة)",
-                "لجنة الاقتصاد والريادة: أحمد جمال الفاعوري (رئيس لجنة الاقتصاد والريادة)",
-                "لجنة الفنون والثقافة: هديل كتكت (رئيسة لجنة الفنون والثقافة)",
-                "لجنة الإعلام: لا يظهر في بيانات الموقع رئيس للجنة الإعلام حالياً؛ المتوفر شهد سنجق نائب رئيس لجنة الإعلام و Hook Jo داعم ضمن اللجنة."
-            ].join("\n");
-        }
-
-        if (includesAny(q, ["لجنة التكنولوجيا", "التكنولوجيا والابتكار", "ريان", "ريّان"]) && wantsChair) {
-            return "رئيس لجنة التكنولوجيا والابتكار هو ريّان عبد القادر أبو جاموس، حسب بيانات مبادرة همّة الوطنية.";
-        }
-
-        return "";
-    }
-
-    function localFallback(question) {
-        const ar = state.language !== "en";
-        const q = question.toLowerCase();
-        if (q.includes("هم") || q.includes("himma") || q.includes("initiative")) {
-            return ar
-                ? "مبادرة همّة الشبابية منصة وطنية شبابية تهدف إلى تمكين الشباب، تنظيم العمل التطوعي، وبناء مهارات قيادية وتقنية ومجتمعية تخدم الأردن."
-                : "Himma Youth Initiative is a national youth platform focused on empowering young people, organizing volunteering, and building leadership, technical, and community skills for Jordan.";
-        }
-        if (q.includes("تكنولوجيا") || q.includes("technology") || q.includes("ai") || q.includes("ذكاء")) {
-            return ar
-                ? "لجنة التكنولوجيا والابتكار تركّز على الثقافة الرقمية، الأمن السيبراني، حلول الويب، الذكاء الاصطناعي، واستخدام التقنية لخدمة المبادرات الشبابية."
-                : "The Technology and Innovation Committee focuses on digital literacy, cybersecurity, web solutions, AI, and using technology to support youth initiatives.";
-        }
-        if (q.includes("اردن") || q.includes("الأردن") || q.includes("jordan")) {
-            return ar
-                ? "الأردن يقوم على الانتماء، الخدمة العامة، احترام القانون، والتنوع الاجتماعي. المشاركة الشبابية الواعية تجعل هذه القيم عملاً يومياً لا مجرد شعارات."
-                : "Jordanian civic identity is built on belonging, public service, rule of law, and social diversity. Conscious youth participation turns these values into daily practice.";
-        }
-        return ar
-            ? "أقدر أساعدك بأسئلة عن مبادرة همّة، اللجان، التطوع، الثقافة الوطنية، والمعلومات العامة عن الأردن. اكتب سؤالك بشكل محدد حتى أعطيك إجابة أوضح."
-            : "I can help with questions about Himma, committees, volunteering, national culture, and general information about Jordan. Ask a specific question for a clearer answer.";
-    }
-
-    function backendDisabledMessage() {
-        return currentCopy().backendReady;
+        return score;
     }
 
     async function requestAiAnswer(question) {
-        const endpoint = aiEndpoint();
-        if (!endpoint) {
-            return { disabled: true, answer: backendDisabledMessage() };
+        const config = window.HIMMA_SUPABASE_CONFIG;
+        if (!config || !config.url || !config.anonKey) {
+            throw new Error("Missing Supabase public config");
         }
 
-        const payload = {
-            question,
-            language: state.language,
-            dialect: state.elements.select.value || "jordanian",
-            visitor_id: visitorId(),
-            ...(await authPayload())
-        };
-
+        const endpoint = `${config.url.replace(/\/$/, "")}/rest/v1/himma_ai_knowledge?select=question,answer,keywords,category&is_active=eq.true&limit=100`;
         const response = await fetch(endpoint, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(payload)
+            method: "GET",
+            headers: {
+                "apikey": config.anonKey,
+                "Authorization": `Bearer ${config.anonKey}`
+            }
         });
 
         if (!response.ok) {
-            throw new Error(`AI endpoint responded with ${response.status}`);
+            throw new Error("Supabase knowledge query failed");
         }
 
-        const data = await response.json().catch(() => ({}));
-        const answer = data.answer || data.reply || data.message;
-        if (!answer || typeof answer !== "string") {
-            throw new Error("AI endpoint response did not include an answer.");
+        const rows = await response.json().catch(() => []);
+        const ranked = Array.isArray(rows)
+            ? rows
+                .map((row) => ({ row, score: scoreKnowledgeRow(row, question) }))
+                .filter((item) => item.score >= 18 && item.row.answer)
+                .sort((a, b) => b.score - a.score)
+            : [];
+
+        if (!ranked.length) {
+            return { answer: currentCopy().noAnswer };
         }
-        return { answer };
+
+        return { answer: ranked[0].row.answer };
     }
 
     async function sendQuestion(rawQuestion) {
@@ -486,11 +406,8 @@
         try {
             const result = await requestAiAnswer(question);
             pending.textContent = result.answer;
-            if (result.disabled) {
-                setStatus("");
-            }
         } catch (error) {
-            pending.textContent = text.backendError || text.error;
+            pending.textContent = text.error;
             pending.classList.add("himma-ai-message-error");
             setStatus(text.error);
         } finally {
