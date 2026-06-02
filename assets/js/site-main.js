@@ -911,9 +911,7 @@
                         courses: courses || null,
                         motivation,
                         skills: skills || null,
-                        availability: availability || null,
-                        page_url: window.location.origin + window.location.pathname,
-                        user_agent: navigator.userAgent
+                        availability: availability || null
                     };
 
                     try {
