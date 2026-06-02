@@ -942,6 +942,49 @@ body.dark-mode .site-footer {
 
 body.dark-mode {
     color: #f4f7f5;
+    background: #050806;
+}
+
+body.dark-mode .site-header {
+    background: #050806 !important;
+    border-bottom-color: rgba(255, 255, 255, 0.12) !important;
+}
+
+body.dark-mode .main-nav {
+    background: rgba(10, 16, 13, 0.76) !important;
+    border: 1px solid rgba(255, 255, 255, 0.08) !important;
+    box-shadow: 0 18px 38px rgba(0, 0, 0, 0.22);
+}
+
+body.dark-mode .nav-button:hover,
+body.dark-mode .nav-button.is-active {
+    background: rgba(0, 122, 61, 0.18) !important;
+    color: #ffffff !important;
+}
+
+body.dark-mode #home .hero-grid {
+    background: linear-gradient(135deg, #050806 0%, #0a1510 58%, #070807 100%) !important;
+    border-color: rgba(0, 122, 61, 0.24) !important;
+}
+
+body.dark-mode .impact-card,
+body.dark-mode .royal-card,
+body.dark-mode .article-card,
+body.dark-mode .news-card,
+body.dark-mode .initiative-card,
+body.dark-mode .committee-directory-card,
+body.dark-mode .committee-article-panel,
+body.dark-mode #structure .committee-panel,
+body.dark-mode #structure .profile-card,
+body.dark-mode .partner-card,
+body.dark-mode .contact-card,
+body.dark-mode .form-card,
+body.dark-mode .auth-card,
+body.dark-mode .profile-summary-card,
+body.dark-mode .dashboard-panel,
+body.dark-mode .dashboard-top {
+    background-color: #0d1411 !important;
+    border-color: rgba(255, 255, 255, 0.12) !important;
 }
 
 body.dark-mode p,
@@ -979,15 +1022,33 @@ body.dark-mode textarea::placeholder {
 }
 
 body.dark-mode #home .logo-panel img.night-logo-active,
+body.dark-mode .brand-button img.night-logo-active,
 body.dark-mode .auth-logo.night-logo-active,
 body.dark-mode .dashboard-logo.night-logo-active {
-    width: min(360px, 72vw);
-    max-height: 150px;
-    object-fit: contain;
-    padding: 10px 14px;
+    object-fit: contain !important;
+    background: transparent !important;
+    filter: brightness(0) invert(1) contrast(1.08) drop-shadow(0 10px 20px rgba(0, 122, 61, 0.22)) !important;
+}
+
+body.dark-mode .brand-button img.night-logo-active {
+    width: clamp(132px, 15vw, 190px) !important;
+    max-height: 82px !important;
+    padding: 0 !important;
+}
+
+body.dark-mode #home .logo-panel img.night-logo-active {
+    width: min(420px, 72vw) !important;
+    max-height: 170px !important;
+    padding: 8px 12px !important;
+    opacity: 0.96 !important;
+}
+
+body.dark-mode .auth-logo.night-logo-active,
+body.dark-mode .dashboard-logo.night-logo-active {
+    width: min(320px, 70vw) !important;
+    max-height: 135px !important;
+    padding: 8px 12px !important;
     border-radius: 10px;
-    background: rgba(255, 255, 255, 0.04);
-    filter: brightness(0) invert(1) drop-shadow(0 14px 24px rgba(0, 122, 61, 0.18));
 }
 
 .dashboard-top {
