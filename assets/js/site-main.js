@@ -854,9 +854,10 @@
                         return;
                     }
 
-                    const ageInputValue = document.getElementById("age").value.trim();
-                    const ageValue = ageInputValue === "" ? null : Number(ageInputValue);
-                    if (ageValue !== null && (!Number.isInteger(ageValue) || ageValue < 15 || ageValue > 40)) {
+                    const ageInput = document.getElementById("age");
+                    const ageInputValue = ageInput ? ageInput.value.trim() : "";
+                    const ageValue = Number(ageInputValue);
+                    if (ageInputValue === "" || !Number.isInteger(ageValue) || ageValue < 15 || ageValue > 40) {
                         message.textContent = currentLanguage === "en" ? translations["يرجى إدخال عمر صحيح بين 15 و40."] : "يرجى إدخال عمر صحيح بين 15 و40.";
                         return;
                     }
