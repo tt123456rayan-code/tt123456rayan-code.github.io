@@ -912,13 +912,14 @@
                     const motivation = String(formData.get("motivation") || "").trim();
                     const skills = String(formData.get("skills") || "").trim();
                     const availability = String(formData.get("availability") || "").trim();
+                    const phoneDigits = phone.replace(/\D/g, "");
                     const unsafePattern = /<|>|javascript:|data:/i;
                     const lengthInvalid =
-                        fullName.length < 3 || fullName.length > 120 ||
-                        phone.length < 7 || phone.length > 24 ||
-                        governorate.length < 2 || governorate.length > 80 ||
+                        fullName.length < 2 || fullName.length > 120 ||
+                        phoneDigits.length < 7 || phone.length > 24 ||
+                        governorate.length < 1 || governorate.length > 80 ||
                         committee.length < 2 || committee.length > 120 ||
-                        motivation.length < 10 || motivation.length > 2000 ||
+                        motivation.length < 1 || motivation.length > 2000 ||
                         courses.length > 2000 ||
                         skills.length > 2000 ||
                         availability.length > 1000;
