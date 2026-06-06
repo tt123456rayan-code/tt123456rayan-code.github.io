@@ -846,16 +846,42 @@
             });
             setDashboardView("profile");
 
+            const normalizeArabicDigits = (value) => String(value || "")
+                .replace(/[\u0660-\u0669]/g, (digit) => String(digit.charCodeAt(0) - 0x0660))
+                .replace(/[\u06f0-\u06f9]/g, (digit) => String(digit.charCodeAt(0) - 0x06f0));
+            const normalizePhoneValue = (value) => normalizeArabicDigits(value)
+                .replace(/[^\d+\s]/g, "")
+                .replace(/\s+/g, " ")
+                .trim();
+            const postJoinRequest = async (supabaseConfig, payload) => {
+                const response = await fetch(supabaseConfig.url.replace(/\/$/, "") + "/rest/v1/join_requests", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "apikey": supabaseConfig.anonKey,
+                        "Authorization": "Bearer " + supabaseConfig.anonKey,
+                        "Prefer": "return=minimal"
+                    },
+                    body: JSON.stringify(payload)
+                });
+                if (response.ok) {
+                    return { ok: true, errorText: "" };
+                }
+                const errorText = await response.text().catch(() => "");
+                return { ok: false, errorText };
+            };
+
             if (form) {
                 form.addEventListener("submit", async (event) => {
                     event.preventDefault();
+                    console.info("[Himma] join form submit fired");
                     if (!form.checkValidity()) {
                         form.reportValidity();
                         return;
                     }
 
                     const ageInput = document.getElementById("age");
-                    const ageInputValue = ageInput ? ageInput.value.trim() : "";
+                    const ageInputValue = normalizeArabicDigits(ageInput ? ageInput.value.trim() : "");
                     const ageValue = Number(ageInputValue);
                     if (ageInputValue === "" || !Number.isInteger(ageValue) || ageValue < 15 || ageValue > 40) {
                         message.textContent = currentLanguage === "en" ? translations["يرجى إدخال عمر صحيح بين 15 و40."] : "يرجى إدخال عمر صحيح بين 15 و40.";
@@ -863,6 +889,7 @@
                     }
 
                     const supabaseConfig = window.HIMMA_SUPABASE_CONFIG;
+                    console.info("[Himma] Supabase config available", Boolean(supabaseConfig && supabaseConfig.url && supabaseConfig.anonKey));
                     if (!supabaseConfig || !supabaseConfig.url || !supabaseConfig.anonKey) {
                         message.textContent = currentLanguage === "en" ? "We could not send the request right now. Please try again shortly." : "تعذر إرسال الطلب حالياً. يرجى المحاولة بعد قليل.";
                         return;
@@ -878,7 +905,7 @@
 
                     const formData = new FormData(form);
                     const fullName = String(formData.get("fullName") || "").trim();
-                    const phone = String(formData.get("phone") || "").trim();
+                    const phone = normalizePhoneValue(formData.get("phone"));
                     const governorate = String(formData.get("governorate") || "").trim();
                     const committee = String(formData.get("committee") || "").trim();
                     const courses = String(formData.get("courses") || "").trim();
@@ -916,22 +943,27 @@
                     };
 
                     try {
-                        const response = await fetch(supabaseConfig.url.replace(/\/$/, "") + "/rest/v1/join_requests", {
-                            method: "POST",
-                            headers: {
-                                "Content-Type": "application/json",
-                                "apikey": supabaseConfig.anonKey,
-                                "Authorization": "Bearer " + supabaseConfig.anonKey,
-                                "Prefer": "return=minimal"
-                            },
-                            body: JSON.stringify(payload)
-                        });
-                        if (!response.ok) {
+                        let insertResult = await postJoinRequest(supabaseConfig, payload);
+                        if (!insertResult.ok && /Could not find the 'motivation' column|column "motivation"|PGRST204/i.test(insertResult.errorText)) {
+                            const { motivation: _motivation, ...joinGoalPayload } = payload;
+                            insertResult = await postJoinRequest(supabaseConfig, {
+                                ...joinGoalPayload,
+                                join_goal: motivation
+                            });
+                        } else if (!insertResult.ok && /null value in column "join_goal"/i.test(insertResult.errorText)) {
+                            insertResult = await postJoinRequest(supabaseConfig, {
+                                ...payload,
+                                join_goal: motivation
+                            });
+                        }
+                        if (!insertResult.ok) {
                             throw new Error("Join request insert failed");
                         }
+                        console.info("[Himma] join request insert success");
                         trackSiteEvent("join_submit_success", { section: "join" });
                         window.location.href = "thank-you.html";
                     } catch (_) {
+                        console.info("[Himma] join request insert failure");
                         trackSiteEvent("join_submit_error", { section: "join" });
                         message.textContent = currentLanguage === "en" ? "We could not send the request right now. Please try again shortly." : "تعذر إرسال الطلب حالياً. يرجى المحاولة بعد قليل.";
                     } finally {
