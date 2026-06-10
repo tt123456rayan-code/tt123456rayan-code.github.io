@@ -1467,6 +1467,20 @@ body.dark-mode .president-home-portrait {
     }
 }
 
+@media (max-width: 767px), (pointer: coarse) {
+    #home .hero-3d-stage {
+        display: none !important;
+    }
+
+    #home .hero-logo-showcase > img {
+        display: block !important;
+        width: min(92vw, 430px) !important;
+        height: auto !important;
+        margin: 0 auto !important;
+        filter: drop-shadow(0 18px 28px rgba(0, 0, 0, 0.22));
+    }
+}
+
 @media (max-width: 920px) {
     .nav-menu-toggle {
         width: 46px !important;

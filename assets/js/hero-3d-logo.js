@@ -1,7 +1,4 @@
-import * as THREE from "../vendor/three.module.min.js";
-import { GLTFLoader } from "../vendor/GLTFLoader.js";
-
-(() => {
+(async () => {
     const canvas = document.getElementById("himma-hero-3d");
     const stage = canvas?.closest(".hero-3d-stage");
     if (!canvas || !stage) return;
@@ -9,7 +6,15 @@ import { GLTFLoader } from "../vendor/GLTFLoader.js";
     const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     const mobileMedia = window.matchMedia("(max-width: 767px), (pointer: coarse)");
     const isMobileLayout = mobileMedia.matches;
-    const shouldAnimate = !reduceMotion && !isMobileLayout;
+    if (isMobileLayout) {
+        stage.dataset.state = "mobile-fallback";
+        canvas.setAttribute("aria-hidden", "true");
+        return;
+    }
+
+    const THREE = await import("../vendor/three.module.min.js");
+    const { GLTFLoader } = await import("../vendor/GLTFLoader.js");
+    const shouldAnimate = !reduceMotion;
     const modelUrl = "/models/hemma_logo_final.glb";
     const scene = new THREE.Scene();
     const camera = new THREE.PerspectiveCamera(30, 1, 0.01, 1000);
