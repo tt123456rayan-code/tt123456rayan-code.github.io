@@ -77,6 +77,90 @@
         }
     };
 
+    const localKnowledge = [
+        {
+            question: "ما هي مبادرة همّة الوطنية؟",
+            answer: {
+                ar: "مبادرة همّة الوطنية للتنمية الشبابية مساحة شبابية وطنية تهدف إلى تمكين الشباب، صقل مهاراتهم، وبناء حضور فاعل في العمل المجتمعي والقيادة والمبادرات ذات الأثر.",
+                en: "Himma National Youth Development Initiative is a Jordanian youth initiative focused on empowering young people, developing their skills, and supporting active participation in community work, leadership, and impact-driven initiatives."
+            },
+            keywords: ["همة", "مبادرة همّة", "تعريف", "المبادرة", "himma", "initiative"],
+            category: "about"
+        },
+        {
+            question: "ما رؤية ورسالة المبادرة؟",
+            answer: {
+                ar: "رؤية همّة أن تكون منصة وطنية رائدة في إعداد وتأهيل جيل شبابي واعٍ قادر على القيادة والتأثير الإيجابي. ورسالتها توفير بيئة شبابية آمنة ومحفزة تساعد الشباب على اكتشاف قدراتهم وتطوير مهاراتهم من خلال التدريب والأنشطة والمبادرات.",
+                en: "Himma's vision is to be a leading national platform for preparing aware young people capable of leadership and positive impact. Its mission is to provide a safe, motivating youth environment that helps young people discover their abilities and develop their skills through training, activities, and initiatives."
+            },
+            keywords: ["رؤية", "رسالة", "vision", "mission", "هدف", "اهداف"],
+            category: "vision"
+        },
+        {
+            question: "ما هي لجان المبادرة؟",
+            answer: {
+                ar: "لجان المبادرة تظهر في قسم لجاننا وقسم الهيكل الإداري، وتشمل مسارات مثل التمكين السياسي والدبلوماسي، التكنولوجيا والابتكار، الإعلام، التدريب والتطوير، الصحة، البيئة، العلاقات العامة والشراكات، وغيرها حسب بيانات الموقع.",
+                en: "The initiative committees are shown in the Committees and Administrative Structure sections. They include tracks such as Political and Diplomatic Empowerment, Technology and Innovation, Media, Training and Development, Health, Environment, Public Relations and Partnerships, and others according to the site data."
+            },
+            keywords: ["لجان", "اللجان", "لجاننا", "هيكل", "committees", "structure"],
+            category: "committees"
+        },
+        {
+            question: "كيف أنضم إلى المبادرة؟",
+            answer: {
+                ar: "للانضمام، افتح قسم سجل معنا في الموقع، عبئ نموذج التسجيل بالمعلومات المطلوبة، ثم أرسل الطلب ليصل إلى فريق المبادرة للمراجعة.",
+                en: "To join, open the Join section on the website, fill in the registration form with the required information, and submit the request for the initiative team to review."
+            },
+            keywords: ["انضم", "تسجيل", "سجل معنا", "نموذج", "join", "register", "form"],
+            category: "join"
+        },
+        {
+            question: "كيف أتواصل مع المبادرة؟",
+            answer: {
+                ar: "يمكنك التواصل مع المبادرة من خلال قسم تواصل معنا في الموقع والوسائل المنشورة هناك.",
+                en: "You can contact the initiative through the Contact section on the website and the communication channels listed there."
+            },
+            keywords: ["تواصل", "اتصال", "contact", "message"],
+            category: "contact"
+        },
+        {
+            question: "من رئيس لجنة التكنولوجيا والابتكار؟",
+            answer: {
+                ar: "رئيس لجنة التكنولوجيا والابتكار هو ريان عبد القادر ابوجاموس.",
+                en: "The Technology and Innovation Committee is chaired by Rayan Abdulqader Abu Jamos."
+            },
+            keywords: ["ريان", "ابوجاموس", "تكنولوجيا", "ابتكار", "technology", "innovation", "rayan"],
+            category: "leadership"
+        },
+        {
+            question: "من رئيس لجنة التمكين السياسي؟",
+            answer: {
+                ar: "رئيس لجنة التمكين السياسي والدبلوماسي هو علي الرغول.",
+                en: "The Political and Diplomatic Empowerment Committee is chaired by Ali Al-Rghoul."
+            },
+            keywords: ["علي", "الرغول", "تمكين سياسي", "سياسي", "دبلوماسي", "political", "empowerment", "ali"],
+            category: "leadership"
+        },
+        {
+            question: "ما المقصود بالثقافة الوطنية؟",
+            answer: {
+                ar: "الثقافة الوطنية هي وعي الفرد بهوية وطنه وقيمه وتاريخه ورموزه، وترجمتها إلى سلوك مسؤول يحترم المجتمع ويخدم الصالح العام.",
+                en: "National culture means awareness of a country's identity, values, history, and symbols, translated into responsible behavior that respects society and serves the public good."
+            },
+            keywords: ["ثقافة وطنية", "الوطنية", "هوية", "national culture", "identity"],
+            category: "national-culture"
+        },
+        {
+            question: "متى استقل الأردن؟",
+            answer: {
+                ar: "استقل الأردن في 25 أيار 1946، ويُحتفل بعيد الاستقلال في الخامس والعشرين من أيار كل عام.",
+                en: "Jordan gained independence on May 25, 1946, and Independence Day is celebrated every year on May 25."
+            },
+            keywords: ["استقلال", "استقل", "الأردن", "25 أيار", "independence", "jordan"],
+            category: "jordan"
+        }
+    ];
+
     function currentCopy() {
         return copy[state.language] || copy.ar;
     }
@@ -351,7 +435,43 @@
         return score;
     }
 
-    async function requestAiAnswer(question) {
+    function getAnswerText(row) {
+        if (row.answer && typeof row.answer === "object") {
+            return row.answer[state.language] || row.answer.ar || row.answer.en || "";
+        }
+        return String(row.answer || "");
+    }
+
+    function shapeAnswer(answer, row) {
+        const text = String(answer || "").trim();
+        if (!text) return currentCopy().noAnswer;
+        if (state.language === "en") {
+            return text;
+        }
+
+        const dialect = state.elements.select?.value || "fusha";
+        const prefixByDialect = {
+            fusha: "",
+            jordanian: "أكيد. ",
+            fallahi: "يا طيب، ",
+            bedouin: "أبشر. "
+        };
+        const categoryLabels = {
+            about: "تعريف المبادرة",
+            vision: "الرؤية والرسالة",
+            committees: "اللجان",
+            join: "التسجيل",
+            contact: "التواصل",
+            leadership: "الهيكل الإداري",
+            "national-culture": "الثقافة الوطنية",
+            jordan: "الأردن"
+        };
+        const prefix = prefixByDialect[dialect] || "";
+        const category = row?.category && categoryLabels[row.category] ? `\n\nالمجال: ${categoryLabels[row.category]}` : "";
+        return `${prefix}${text}${category}`.trim();
+    }
+
+    async function fetchSupabaseKnowledge() {
         const config = window.HIMMA_SUPABASE_CONFIG;
         if (!config || !config.url || !config.anonKey) {
             throw new Error("Missing Supabase public config");
@@ -370,19 +490,36 @@
             throw new Error("Supabase knowledge query failed");
         }
 
-        const rows = await response.json().catch(() => []);
-        const ranked = Array.isArray(rows)
-            ? rows
+        return response.json().catch(() => []);
+    }
+
+    async function requestAiAnswer(question) {
+        let supabaseRows = [];
+        let supabaseAvailable = true;
+        try {
+            supabaseRows = await fetchSupabaseKnowledge();
+        } catch (_) {
+            supabaseAvailable = false;
+        }
+
+        const rows = [
+            ...(Array.isArray(supabaseRows) ? supabaseRows : []),
+            ...localKnowledge
+        ];
+        const ranked = rows
                 .map((row) => ({ row, score: scoreKnowledgeRow(row, question) }))
-                .filter((item) => item.score >= 18 && item.row.answer)
+                .filter((item) => item.score >= 14 && getAnswerText(item.row))
                 .sort((a, b) => b.score - a.score)
-            : [];
+            ;
 
         if (!ranked.length) {
+            if (!supabaseAvailable) {
+                throw new Error("Supabase knowledge unavailable");
+            }
             return { answer: currentCopy().noAnswer };
         }
 
-        return { answer: ranked[0].row.answer };
+        return { answer: shapeAnswer(getAnswerText(ranked[0].row), ranked[0].row) };
     }
 
     async function sendQuestion(rawQuestion) {
