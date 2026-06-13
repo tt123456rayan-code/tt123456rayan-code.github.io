@@ -149,6 +149,51 @@ select:focus-visible {
     box-shadow: var(--polish-focus);
 }
 
+.home-platform-card {
+    width: min(1120px, calc(100% - 32px));
+    margin: clamp(18px, 3vw, 30px) auto;
+    padding: clamp(18px, 3vw, 28px);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 18px;
+    border: 1px solid rgba(0, 136, 74, 0.22);
+    border-right: 5px solid var(--green);
+    border-radius: 14px;
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.96), rgba(238, 247, 242, 0.96));
+    box-shadow: 0 16px 40px rgba(0, 33, 22, 0.08);
+}
+
+.home-platform-card h2 {
+    margin: 4px 0 6px;
+    color: var(--green);
+}
+
+.home-platform-card p {
+    margin: 0;
+}
+
+body.dark-mode .home-platform-card {
+    background: linear-gradient(135deg, rgba(8, 20, 15, 0.96), rgba(10, 38, 26, 0.92));
+    border-color: rgba(0, 136, 74, 0.35);
+}
+
+body.dark-mode .home-platform-card h2,
+body.dark-mode .home-platform-card p {
+    color: var(--white);
+}
+
+@media (max-width: 720px) {
+    .home-platform-card {
+        align-items: stretch;
+        flex-direction: column;
+    }
+
+    .home-platform-card .hero-cta {
+        width: 100%;
+    }
+}
+
 .page {
     margin-block: clamp(18px, 2.6vw, 34px);
 }
