@@ -36,6 +36,7 @@ create table if not exists public.himma_opportunity_admins (
 alter table public.himma_opportunities enable row level security;
 alter table public.himma_opportunity_admins enable row level security;
 
+grant usage on schema public to anon, authenticated;
 grant select, insert, update, delete on public.himma_opportunities to authenticated;
 grant select on public.himma_opportunities to anon;
 grant select on public.himma_opportunity_admins to authenticated;
@@ -43,6 +44,11 @@ grant select on public.himma_opportunity_admins to authenticated;
 insert into public.himma_opportunity_admins (email, display_name)
 values ('r47296207@gmail.com', 'ريان')
 on conflict (email) do update set display_name = excluded.display_name, is_active = true;
+
+-- أضف إيميلات عمر وزيد الحقيقية هنا بعد إنشائها في Supabase Auth:
+-- insert into public.himma_opportunity_admins (email, display_name)
+-- values ('OMAR_EMAIL_HERE', 'عمر'), ('ZAID_EMAIL_HERE', 'زيد')
+-- on conflict (email) do update set display_name = excluded.display_name, is_active = true;
 
 drop policy if exists "Public can read approved Himma opportunities" on public.himma_opportunities;
 create policy "Public can read approved Himma opportunities"
