@@ -853,6 +853,36 @@
                 .replace(/[^\d+\s]/g, "")
                 .replace(/\s+/g, " ")
                 .trim();
+            const joinCommitteeArabicNames = {
+                health: "لجنة الصحة",
+                legal: "لجنة الشؤون القانونية",
+                sports: "اللجنة الرياضية",
+                arts: "لجنة الفنون والثقافة",
+                economy: "اللجنة الاقتصادية وريادة الأعمال",
+                political: "لجنة التمكين السياسي والدبلوماسي",
+                media: "اللجنة الإعلامية",
+                training: "لجنة التدريب والتطوير",
+                community: "اللجنة المجتمعية والعمل التطوعي",
+                pr: "لجنة العلاقات العامة والشراكات",
+                "public-relations": "لجنة العلاقات العامة والشراكات",
+                tech: "لجنة التكنولوجيا والابتكار",
+                technology: "لجنة التكنولوجيا والابتكار",
+                environment: "لجنة البيئة"
+            };
+            const resolveCommitteeArabicName = (value) => {
+                const normalizedValue = String(value || "").trim();
+                if (!normalizedValue) {
+                    return "";
+                }
+                if (joinCommitteeArabicNames[normalizedValue]) {
+                    return joinCommitteeArabicNames[normalizedValue];
+                }
+                const committeeSelect = form ? form.querySelector("#committee") : null;
+                const selectedOption = committeeSelect
+                    ? Array.from(committeeSelect.options).find((option) => option.value === normalizedValue)
+                    : null;
+                return selectedOption ? selectedOption.textContent.trim() : normalizedValue;
+            };
             const postJoinRequest = async (supabaseConfig, payload) => {
                 const response = await fetch(supabaseConfig.url.replace(/\/$/, "") + "/rest/v1/join_requests", {
                     method: "POST",
@@ -907,7 +937,8 @@
                     const fullName = String(formData.get("fullName") || "").trim();
                     const phone = normalizePhoneValue(formData.get("phone"));
                     const governorate = String(formData.get("governorate") || "").trim();
-                    const committee = String(formData.get("committee") || "").trim();
+                    const committeeValue = String(formData.get("committee") || "").trim();
+                    const committee = resolveCommitteeArabicName(committeeValue);
                     const courses = String(formData.get("courses") || "").trim();
                     const motivation = String(formData.get("motivation") || "").trim();
                     const skills = String(formData.get("skills") || "").trim();
