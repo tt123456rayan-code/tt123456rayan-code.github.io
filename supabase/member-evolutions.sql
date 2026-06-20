@@ -14,11 +14,18 @@ create table if not exists public.member_evolution_users (
 
 create table if not exists public.member_evolution_admins (
     membership_number text primary key references public.member_evolution_users(membership_number) on update cascade on delete cascade,
-    role text not null check (role in ('super_admin', 'evaluator')),
+    role text not null check (role in ('super_admin', 'discipline_admin', 'evaluator')),
     display_name text not null,
     is_active boolean not null default true,
     created_at timestamptz not null default now()
 );
+
+alter table public.member_evolution_admins
+drop constraint if exists member_evolution_admins_role_check;
+
+alter table public.member_evolution_admins
+add constraint member_evolution_admins_role_check
+check (role in ('super_admin', 'discipline_admin', 'evaluator'));
 
 create table if not exists public.member_evolution_records (
     member_id uuid primary key references public.member_evolution_users(id) on delete cascade,
@@ -94,7 +101,7 @@ begin
         return jsonb_build_object('success', false, 'message', 'invalid_login');
     end if;
 
-    if current_member.admin_role in ('super_admin', 'evaluator') then
+    if current_member.admin_role in ('super_admin', 'discipline_admin', 'evaluator') then
         return jsonb_build_object(
             'success', true,
             'viewer', jsonb_build_object(
@@ -231,7 +238,7 @@ begin
     from public.member_evolution_auth(admin_membership_number, admin_password)
     limit 1;
 
-    if admin_member.admin_role not in ('super_admin', 'evaluator') then
+    if admin_member.admin_role not in ('super_admin', 'discipline_admin', 'evaluator') then
         return jsonb_build_object('success', false, 'message', 'not_allowed');
     end if;
 
@@ -275,7 +282,7 @@ begin
     from public.member_evolution_auth(admin_membership_number, admin_password)
     limit 1;
 
-    if admin_member.admin_role <> 'super_admin' then
+    if admin_member.admin_role not in ('super_admin', 'discipline_admin') then
         return jsonb_build_object('success', false, 'message', 'not_allowed');
     end if;
 
@@ -319,7 +326,12 @@ set full_name = excluded.full_name,
 
 insert into public.member_evolution_admins (membership_number, role, display_name)
 select u.membership_number,
-       case when u.full_name ilike '%ريان%عبد%القادر%' then 'super_admin' else 'evaluator' end,
+       case
+           when u.full_name ilike '%ريان%عبد%القادر%' then 'super_admin'
+           when u.full_name ilike '%عمر%دقروق%' then 'discipline_admin'
+           when u.full_name ilike '%زيد%مناصير%' or u.full_name ilike '%زيد%المناصير%' then 'discipline_admin'
+           else 'evaluator'
+       end,
        u.full_name
 from public.member_evolution_users u
 where u.full_name ilike '%ريان%عبد%القادر%'

@@ -99,9 +99,9 @@
         els.viewerMembership.textContent = data.viewer.membership_number || "-";
 
         const role = data.viewer.admin_role;
-        els.viewerRole.textContent = role === "super_admin" ? "مدير النظام" : role === "evaluator" ? "مشرف تقييمات" : "عضو";
+        els.viewerRole.textContent = role === "super_admin" ? "مدير النظام" : role === "discipline_admin" ? "إدارة الانضباط" : role === "evaluator" ? "مشرف تقييمات" : "عضو";
 
-        if (role === "super_admin" || role === "evaluator") {
+        if (role === "super_admin" || role === "discipline_admin" || role === "evaluator") {
             state.members = Array.isArray(data.members) ? data.members : [];
             els.memberView.hidden = true;
             els.adminView.hidden = false;
@@ -167,7 +167,7 @@
         els.warningSelect.value = String(member.warning_level || 0);
         els.statusSelect.value = member.status || "مستقيم";
         els.notesInput.value = member.notes || "";
-        els.deactivateButton.hidden = state.viewer.admin_role !== "super_admin" || Number(member.warning_level || 0) < 3;
+        els.deactivateButton.hidden = !canDeactivateMembers() || Number(member.warning_level || 0) < 3;
         setMessage(els.evaluationMessage, "");
         els.evaluationForm.scrollIntoView({ behavior: "smooth", block: "start" });
     }
@@ -179,6 +179,10 @@
             .replace(/>/g, "&gt;")
             .replace(/"/g, "&quot;")
             .replace(/'/g, "&#039;");
+    }
+
+    function canDeactivateMembers() {
+        return state.viewer && (state.viewer.admin_role === "super_admin" || state.viewer.admin_role === "discipline_admin");
     }
 
     async function refreshPortal() {
@@ -225,7 +229,7 @@
         if (Number(els.warningSelect.value) >= 3 && els.statusSelect.value !== "مطرود") {
             els.statusSelect.value = "تحت المتابعة";
         }
-        els.deactivateButton.hidden = state.viewer.admin_role !== "super_admin" || Number(els.warningSelect.value) < 3;
+        els.deactivateButton.hidden = !canDeactivateMembers() || Number(els.warningSelect.value) < 3;
     });
 
     els.createMemberForm.addEventListener("submit", async (event) => {
