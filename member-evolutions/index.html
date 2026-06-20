@@ -1,0 +1,139 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Member Evolutions | همّة</title>
+    <meta name="robots" content="noindex,nofollow">
+    <link rel="stylesheet" href="./styles.css">
+</head>
+<body>
+    <main class="app-shell">
+        <section class="login-card" id="login-view">
+            <div class="brand-lockup">
+                <img src="../assets/images/logo-pdf-optimized.webp" alt="شعار مبادرة همّة" onerror="this.style.display='none'">
+                <div>
+                    <p class="eyebrow">منصة داخلية</p>
+                    <h1>Member Evolutions</h1>
+                </div>
+            </div>
+            <p class="lead">تسجيل دخول الأعضاء للاطلاع على التقييمات والملاحظات والإنذارات الداخلية.</p>
+            <form id="login-form" class="form-grid">
+                <label>
+                    رقم العضوية
+                    <input id="membership-number" name="membership_number" autocomplete="username" required>
+                </label>
+                <label>
+                    كلمة المرور
+                    <input id="password" name="password" type="password" autocomplete="current-password" required>
+                </label>
+                <button type="submit">دخول</button>
+                <p class="form-message" id="login-message"></p>
+            </form>
+        </section>
+
+        <section class="dashboard" id="dashboard-view" hidden>
+            <header class="dashboard-header">
+                <div>
+                    <p class="eyebrow" id="viewer-role">عضو</p>
+                    <h1 id="viewer-name">-</h1>
+                    <p id="viewer-membership">-</p>
+                </div>
+                <button class="ghost-button" id="logout-button" type="button">تسجيل خروج</button>
+            </header>
+
+            <section class="member-view" id="member-view" hidden>
+                <article class="status-card">
+                    <span>التقييم الحالي</span>
+                    <strong id="member-rating">-</strong>
+                </article>
+                <article class="status-card">
+                    <span>الإنذارات</span>
+                    <strong id="member-warning">-</strong>
+                </article>
+                <article class="status-card">
+                    <span>الحالة</span>
+                    <strong id="member-status">-</strong>
+                </article>
+                <article class="notes-card">
+                    <h2>الملاحظات</h2>
+                    <p id="member-notes">لا توجد ملاحظات حالياً.</p>
+                    <small id="member-updated"></small>
+                </article>
+            </section>
+
+            <section class="admin-view" id="admin-view" hidden>
+                <div class="admin-actions">
+                    <form id="create-member-form" class="admin-card" hidden>
+                        <h2>إضافة عضو جديد</h2>
+                        <label>
+                            اسم العضو
+                            <input id="new-member-name" maxlength="160" required>
+                        </label>
+                        <label>
+                            رقم عضوية اختياري
+                            <input id="new-member-number" maxlength="32" placeholder="اتركه فارغاً للتوليد">
+                        </label>
+                        <label>
+                            باسورد اختياري
+                            <input id="new-member-password" maxlength="64" placeholder="اتركه فارغاً للتوليد">
+                        </label>
+                        <button type="submit">إضافة العضو</button>
+                        <p class="form-message" id="create-message"></p>
+                        <div class="credentials-box" id="created-credentials" hidden></div>
+                    </form>
+
+                    <div class="admin-card">
+                        <h2>قائمة الأعضاء</h2>
+                        <input id="member-search" class="search-input" placeholder="ابحث بالاسم أو رقم العضوية">
+                        <div class="member-list" id="member-list"></div>
+                    </div>
+                </div>
+
+                <form id="evaluation-form" class="admin-card evaluation-panel" hidden>
+                    <h2 id="evaluation-title">تعديل تقييم عضو</h2>
+                    <input type="hidden" id="target-member-id">
+                    <label>
+                        التقييم
+                        <select id="rating-select">
+                            <option>ممتاز</option>
+                            <option>جيد جدًا</option>
+                            <option>جيد</option>
+                            <option>يحتاج المتابعة</option>
+                            <option>مقصر</option>
+                        </select>
+                    </label>
+                    <label>
+                        الإنذار
+                        <select id="warning-select">
+                            <option value="0">لا يوجد إنذار</option>
+                            <option value="1">إنذار أول</option>
+                            <option value="2">إنذار ثاني</option>
+                            <option value="3">إنذار ثالث</option>
+                        </select>
+                    </label>
+                    <label>
+                        الحالة
+                        <select id="status-select">
+                            <option>مستقيم</option>
+                            <option>تحت المتابعة</option>
+                            <option>مطرود</option>
+                        </select>
+                    </label>
+                    <label>
+                        الملاحظات
+                        <textarea id="notes-input" maxlength="3000"></textarea>
+                    </label>
+                    <div class="button-row">
+                        <button type="submit">حفظ التقييم</button>
+                        <button class="danger-button" id="deactivate-button" type="button" hidden>طرد العضو</button>
+                    </div>
+                    <p class="form-message" id="evaluation-message"></p>
+                </form>
+            </section>
+        </section>
+    </main>
+    <script src="../assets/js/env.js"></script>
+    <script src="./app.js"></script>
+</body>
+</html>
