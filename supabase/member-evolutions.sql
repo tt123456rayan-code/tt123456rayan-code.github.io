@@ -116,6 +116,7 @@ begin
                         'membership_number', u.membership_number,
                         'full_name', u.full_name,
                         'is_active', u.is_active,
+                        'admin_role', a.role,
                         'rating', r.rating,
                         'warning_level', r.warning_level,
                         'status', r.status,
@@ -127,6 +128,9 @@ begin
                 )
                 from public.member_evolution_users u
                 left join public.member_evolution_records r on r.member_id = u.id
+                left join public.member_evolution_admins a
+                  on a.membership_number = u.membership_number
+                 and a.is_active is true
             ), '[]'::jsonb)
         );
     end if;
@@ -176,7 +180,7 @@ begin
     from public.member_evolution_auth(admin_membership_number, admin_password)
     limit 1;
 
-    if admin_member.admin_role <> 'super_admin' then
+    if coalesce(admin_member.admin_role, '') not in ('super_admin', 'discipline_admin') then
         return jsonb_build_object('success', false, 'message', 'not_allowed');
     end if;
 
@@ -238,7 +242,7 @@ begin
     from public.member_evolution_auth(admin_membership_number, admin_password)
     limit 1;
 
-    if admin_member.admin_role not in ('super_admin', 'discipline_admin', 'evaluator') then
+    if coalesce(admin_member.admin_role, '') not in ('super_admin', 'discipline_admin', 'evaluator') then
         return jsonb_build_object('success', false, 'message', 'not_allowed');
     end if;
 
@@ -282,7 +286,7 @@ begin
     from public.member_evolution_auth(admin_membership_number, admin_password)
     limit 1;
 
-    if admin_member.admin_role not in ('super_admin', 'discipline_admin') then
+    if coalesce(admin_member.admin_role, '') not in ('super_admin', 'discipline_admin') then
         return jsonb_build_object('success', false, 'message', 'not_allowed');
     end if;
 
@@ -302,6 +306,110 @@ begin
 end;
 $$;
 
+create or replace function public.member_evolution_delete_member(
+    admin_membership_number text,
+    admin_password text,
+    target_member_id uuid
+)
+returns jsonb
+language plpgsql
+volatile
+security definer
+set search_path = public, extensions
+as $$
+declare
+    admin_member record;
+    target_member record;
+begin
+    select * into admin_member
+    from public.member_evolution_auth(admin_membership_number, admin_password)
+    limit 1;
+
+    if coalesce(admin_member.admin_role, '') not in ('super_admin', 'discipline_admin') then
+        return jsonb_build_object('success', false, 'message', 'not_allowed');
+    end if;
+
+    select id, membership_number, full_name into target_member
+    from public.member_evolution_users
+    where id = target_member_id;
+
+    if target_member.id is null then
+        return jsonb_build_object('success', false, 'message', 'not_found');
+    end if;
+
+    if target_member.full_name ilike '%ريان%عبد%القادر%' then
+        return jsonb_build_object('success', false, 'message', 'protected_member');
+    end if;
+
+    delete from public.member_evolution_users
+    where id = target_member_id;
+
+    return jsonb_build_object('success', true);
+end;
+$$;
+
+create or replace function public.member_evolution_set_admin_role(
+    admin_membership_number text,
+    admin_password text,
+    target_member_id uuid,
+    new_admin_role text
+)
+returns jsonb
+language plpgsql
+volatile
+security definer
+set search_path = public, extensions
+as $$
+declare
+    admin_member record;
+    target_member record;
+    normalized_role text;
+begin
+    select * into admin_member
+    from public.member_evolution_auth(admin_membership_number, admin_password)
+    limit 1;
+
+    if coalesce(admin_member.admin_role, '') <> 'super_admin' or not (coalesce(admin_member.full_name, '') ilike '%ريان%عبد%القادر%') then
+        return jsonb_build_object('success', false, 'message', 'not_allowed');
+    end if;
+
+    select id, membership_number, full_name into target_member
+    from public.member_evolution_users
+    where id = target_member_id;
+
+    if target_member.id is null then
+        return jsonb_build_object('success', false, 'message', 'not_found');
+    end if;
+
+    if target_member.full_name ilike '%ريان%عبد%القادر%' then
+        return jsonb_build_object('success', false, 'message', 'protected_member');
+    end if;
+
+    normalized_role := nullif(btrim(coalesce(new_admin_role, '')), '');
+
+    if normalized_role is null or normalized_role = 'none' then
+        update public.member_evolution_admins
+        set is_active = false
+        where membership_number = target_member.membership_number;
+
+        return jsonb_build_object('success', true, 'role', 'none');
+    end if;
+
+    if normalized_role not in ('discipline_admin', 'evaluator') then
+        return jsonb_build_object('success', false, 'message', 'invalid_role');
+    end if;
+
+    insert into public.member_evolution_admins (membership_number, role, display_name, is_active)
+    values (target_member.membership_number, normalized_role, target_member.full_name, true)
+    on conflict (membership_number) do update
+    set role = excluded.role,
+        display_name = excluded.display_name,
+        is_active = true;
+
+    return jsonb_build_object('success', true, 'role', normalized_role);
+end;
+$$;
+
 insert into public.member_evolution_users (membership_number, full_name, password_hash)
 select
     coalesce(nullif(m.membership_number, ''), nullif(m.membership_id, '')) as membership_number,
@@ -317,6 +425,7 @@ where m.password_hash is not null
       or coalesce(m.full_name, m.name, '') ilike '%زيد%المناصير%'
       or coalesce(m.full_name, m.name, '') ilike '%علاء%العبادي%'
       or coalesce(m.full_name, m.name, '') ilike '%علا%العبادي%'
+      or coalesce(m.full_name, m.name, '') ilike '%لارا%القصير%'
   )
 on conflict (membership_number) do update
 set full_name = excluded.full_name,
@@ -330,6 +439,7 @@ select u.membership_number,
            when u.full_name ilike '%ريان%عبد%القادر%' then 'super_admin'
            when u.full_name ilike '%عمر%دقروق%' then 'discipline_admin'
            when u.full_name ilike '%زيد%مناصير%' or u.full_name ilike '%زيد%المناصير%' then 'discipline_admin'
+           when u.full_name ilike '%لارا%القصير%' then 'discipline_admin'
            else 'evaluator'
        end,
        u.full_name
@@ -340,6 +450,7 @@ where u.full_name ilike '%ريان%عبد%القادر%'
    or u.full_name ilike '%زيد%المناصير%'
    or u.full_name ilike '%علاء%العبادي%'
    or u.full_name ilike '%علا%العبادي%'
+   or u.full_name ilike '%لارا%القصير%'
 on conflict (membership_number) do update
 set role = excluded.role,
     display_name = excluded.display_name,
@@ -355,8 +466,12 @@ revoke all on function public.member_evolution_get_portal(text, text) from publi
 revoke all on function public.member_evolution_create_member(text, text, text, text, text) from public;
 revoke all on function public.member_evolution_save_evaluation(text, text, uuid, text, integer, text, text) from public;
 revoke all on function public.member_evolution_deactivate_member(text, text, uuid) from public;
+revoke all on function public.member_evolution_delete_member(text, text, uuid) from public;
+revoke all on function public.member_evolution_set_admin_role(text, text, uuid, text) from public;
 
 grant execute on function public.member_evolution_get_portal(text, text) to anon;
 grant execute on function public.member_evolution_create_member(text, text, text, text, text) to anon;
 grant execute on function public.member_evolution_save_evaluation(text, text, uuid, text, integer, text, text) to anon;
 grant execute on function public.member_evolution_deactivate_member(text, text, uuid) to anon;
+grant execute on function public.member_evolution_delete_member(text, text, uuid) to anon;
+grant execute on function public.member_evolution_set_admin_role(text, text, uuid, text) to anon;

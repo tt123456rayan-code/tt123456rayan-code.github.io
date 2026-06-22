@@ -41,7 +41,10 @@
         statusSelect: document.getElementById("status-select"),
         notesInput: document.getElementById("notes-input"),
         evaluationMessage: document.getElementById("evaluation-message"),
-        deactivateButton: document.getElementById("deactivate-button")
+        permissionBox: document.getElementById("permission-box"),
+        permissionSelect: document.getElementById("permission-select"),
+        permissionButton: document.getElementById("permission-button"),
+        deleteButton: document.getElementById("delete-button")
     };
 
     function config() {
@@ -84,6 +87,18 @@
         return "لا يوجد إنذار";
     }
 
+    function roleLabel(role) {
+        if (role === "super_admin") return "مدير النظام";
+        if (role === "discipline_admin") return "إدارة الانضباط وإضافة/حذف الأعضاء";
+        if (role === "evaluator") return "مشرف تقييمات";
+        return "عضو";
+    }
+
+    function isProtectedRayan(member) {
+        const fullName = String(member && member.full_name || "").replace(/\s+/g, " ").trim();
+        return /ريان/.test(fullName) && /عبد/.test(fullName) && /القادر/.test(fullName);
+    }
+
     function formatDate(value) {
         if (!value) return "";
         const date = new Date(value);
@@ -99,13 +114,13 @@
         els.viewerMembership.textContent = data.viewer.membership_number || "-";
 
         const role = data.viewer.admin_role;
-        els.viewerRole.textContent = role === "super_admin" ? "مدير النظام" : role === "discipline_admin" ? "إدارة الانضباط" : role === "evaluator" ? "مشرف تقييمات" : "عضو";
+        els.viewerRole.textContent = roleLabel(role);
 
         if (role === "super_admin" || role === "discipline_admin" || role === "evaluator") {
             state.members = Array.isArray(data.members) ? data.members : [];
             els.memberView.hidden = true;
             els.adminView.hidden = false;
-            els.createMemberForm.hidden = role !== "super_admin";
+            els.createMemberForm.hidden = !canManageMembers();
             renderMemberList();
             return;
         }
@@ -146,6 +161,7 @@
                         <span class="badge">${escapeHtml(member.rating || "جيد")}</span>
                         <span class="badge ${warningLevel >= 3 ? "danger" : ""}">${warningText(warningLevel)}</span>
                         <span class="badge ${member.status === "مطرود" ? "danger" : ""}">${escapeHtml(member.status || "مستقيم")}</span>
+                        <span class="badge">${escapeHtml(roleLabel(member.admin_role))}</span>
                     </div>
                 </div>
             `;
@@ -167,7 +183,9 @@
         els.warningSelect.value = String(member.warning_level || 0);
         els.statusSelect.value = member.status || "مستقيم";
         els.notesInput.value = member.notes || "";
-        els.deactivateButton.hidden = !canDeactivateMembers() || Number(member.warning_level || 0) < 3;
+        els.permissionBox.hidden = !canGrantPermissions();
+        els.permissionSelect.value = member.admin_role || "none";
+        els.deleteButton.hidden = !canManageMembers() || isProtectedRayan(member);
         setMessage(els.evaluationMessage, "");
         els.evaluationForm.scrollIntoView({ behavior: "smooth", block: "start" });
     }
@@ -181,8 +199,12 @@
             .replace(/'/g, "&#039;");
     }
 
-    function canDeactivateMembers() {
+    function canManageMembers() {
         return state.viewer && (state.viewer.admin_role === "super_admin" || state.viewer.admin_role === "discipline_admin");
+    }
+
+    function canGrantPermissions() {
+        return state.viewer && state.viewer.admin_role === "super_admin";
     }
 
     async function refreshPortal() {
@@ -229,7 +251,9 @@
         if (Number(els.warningSelect.value) >= 3 && els.statusSelect.value !== "مطرود") {
             els.statusSelect.value = "تحت المتابعة";
         }
-        els.deactivateButton.hidden = !canDeactivateMembers() || Number(els.warningSelect.value) < 3;
+        if (state.selectedMember) {
+            els.deleteButton.hidden = !canManageMembers() || isProtectedRayan(state.selectedMember);
+        }
     });
 
     els.createMemberForm.addEventListener("submit", async (event) => {
@@ -287,24 +311,50 @@
         }
     });
 
-    els.deactivateButton.addEventListener("click", async () => {
-        if (!state.selectedMember) return;
-        if (!confirm("تأكيد طرد العضو وتعطيل دخوله؟")) return;
-        setMessage(els.evaluationMessage, "جاري تعطيل العضو...");
+    els.permissionButton.addEventListener("click", async () => {
+        if (!state.selectedMember || !canGrantPermissions()) return;
+        setMessage(els.evaluationMessage, "جاري تحديث الصلاحية...");
         try {
-            const result = await rpc("member_evolution_deactivate_member", {
+            const result = await rpc("member_evolution_set_admin_role", {
+                admin_membership_number: state.membershipNumber,
+                admin_password: state.password,
+                target_member_id: state.selectedMember.id,
+                new_admin_role: els.permissionSelect.value
+            });
+            if (!result || result.success === false) {
+                throw new Error("permission_failed");
+            }
+            setMessage(els.evaluationMessage, "تم تحديث الصلاحية.");
+            await refreshPortal();
+            const updated = state.members.find((member) => member.id === els.targetMemberId.value);
+            if (updated) selectMember(updated);
+        } catch {
+            setMessage(els.evaluationMessage, "تعذر تحديث الصلاحية.", true);
+        }
+    });
+
+    els.deleteButton.addEventListener("click", async () => {
+        if (!state.selectedMember) return;
+        if (isProtectedRayan(state.selectedMember)) {
+            setMessage(els.evaluationMessage, "لا يمكن حذف ريان من النظام.", true);
+            return;
+        }
+        if (!confirm("تأكيد حذف العضو من نظام التقييم؟")) return;
+        setMessage(els.evaluationMessage, "جاري حذف العضو...");
+        try {
+            const result = await rpc("member_evolution_delete_member", {
                 admin_membership_number: state.membershipNumber,
                 admin_password: state.password,
                 target_member_id: state.selectedMember.id
             });
             if (!result || result.success === false) {
-                throw new Error("deactivate_failed");
+                throw new Error("delete_failed");
             }
-            setMessage(els.evaluationMessage, "تم تعطيل العضو.");
+            setMessage(els.evaluationMessage, "تم حذف العضو.");
             els.evaluationForm.hidden = true;
             await refreshPortal();
         } catch {
-            setMessage(els.evaluationMessage, "تعذر تعطيل العضو.", true);
+            setMessage(els.evaluationMessage, "تعذر حذف العضو.", true);
         }
     });
 })();
