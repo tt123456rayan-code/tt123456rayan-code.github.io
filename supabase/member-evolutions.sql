@@ -369,7 +369,7 @@ begin
     from public.member_evolution_auth(admin_membership_number, admin_password)
     limit 1;
 
-    if coalesce(admin_member.admin_role, '') <> 'super_admin' or not (coalesce(admin_member.full_name, '') ilike '%ريان%عبد%القادر%') then
+    if coalesce(admin_member.admin_role, '') <> 'super_admin' then
         return jsonb_build_object('success', false, 'message', 'not_allowed');
     end if;
 
