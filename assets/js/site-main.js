@@ -850,7 +850,7 @@
                 if (meetingsStatus) {
                     meetingsStatus.textContent = data.can_create_meetings
                         ? "يمكنك إنشاء اجتماع جديد."
-                        : "يمكنك مشاهدة الاجتماعات المنشورة.";
+                        : "حسابك لا يملك صلاحية إنشاء الاجتماعات. اطلب تفعيل can_create_meetings.";
                 }
             }
 
