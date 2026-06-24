@@ -3954,6 +3954,7 @@
                         <div class="dashboard-menu" id="dashboard-menu" hidden>
                             <button type="button" data-dashboard-view="profile" data-en="Profile">البروفايل</button>
                             <button type="button" data-dashboard-view="meetings" data-en="Meetings">الاجتماعات</button>
+                            <button type="button" data-dashboard-view="attendance" data-en="QR Attendance">الحضور QR</button>
                             <button type="button" data-dashboard-view="announcements" data-en="Announcements">إعلامات</button>
                             <button type="button" data-dashboard-view="committees" data-en="Committees">إدارة اللجان</button>
                             <button type="button" id="dashboard-logout" data-en="Log Out">تسجيل الخروج</button>
@@ -4034,6 +4035,16 @@
                             <p class="form-message" id="meeting-message" aria-live="polite"></p>
                         </form>
                         <div class="meetings-list" id="meetings-list" aria-live="polite"></div>
+                    </section>
+                    <section class="dashboard-panel" id="dashboard-attendance-panel" aria-labelledby="attendance-panel-title" hidden>
+                        <div class="meetings-header">
+                            <div>
+                                <p class="eyebrow" data-en="QR Attendance">الحضور QR</p>
+                                <h3 id="attendance-panel-title" data-en="Attendance System">نظام حضور الاجتماعات والفعاليات</h3>
+                            </div>
+                        </div>
+                        <p data-en="Open the attendance system to register attendance or manage event QR codes.">افتح نظام الحضور لتسجيل حضورك أو إدارة رموز QR الخاصة بالاجتماعات.</p>
+                        <a class="btn" href="./attendance/" data-en="Open Attendance System">فتح نظام الحضور</a>
                     </section>
                     <section class="dashboard-panel" id="dashboard-announcements-panel" aria-labelledby="announcements-panel-title" hidden>
                         <div class="meetings-header">

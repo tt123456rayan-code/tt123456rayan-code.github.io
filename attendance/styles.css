@@ -1,0 +1,264 @@
+:root {
+    color-scheme: light;
+    --green: #078444;
+    --green-dark: #063c2b;
+    --red: #ce1126;
+    --ink: #15211c;
+    --muted: #637069;
+    --surface: #ffffff;
+    --line: #d9e3dd;
+    --background: #f3f7f4;
+}
+
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    color: var(--ink);
+    background: var(--background);
+    font-family: Tahoma, Arial, sans-serif;
+}
+
+button,
+input,
+select {
+    font: inherit;
+}
+
+.site-header {
+    min-height: 88px;
+    padding: 12px clamp(18px, 5vw, 72px);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+    background: var(--surface);
+    border-bottom: 1px solid var(--line);
+}
+
+.brand img {
+    display: block;
+    width: min(230px, 48vw);
+    height: 64px;
+    object-fit: contain;
+}
+
+.back-link {
+    color: var(--green-dark);
+    font-weight: 700;
+}
+
+.page-shell {
+    width: min(940px, calc(100% - 28px));
+    margin: 34px auto 64px;
+}
+
+.intro {
+    margin-bottom: 22px;
+}
+
+.intro h1 {
+    margin: 5px 0 10px;
+    font-size: clamp(1.8rem, 5vw, 3rem);
+}
+
+.intro p {
+    color: var(--muted);
+    line-height: 1.8;
+}
+
+.eyebrow {
+    margin: 0;
+    color: var(--green);
+    font-weight: 800;
+}
+
+.mode-tabs {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 16px;
+}
+
+.mode-tabs button,
+button {
+    min-height: 46px;
+    padding: 10px 18px;
+    border: 1px solid var(--green);
+    border-radius: 6px;
+    color: #fff;
+    background: var(--green);
+    font-weight: 800;
+    cursor: pointer;
+}
+
+.mode-tabs button {
+    color: var(--green-dark);
+    background: transparent;
+}
+
+.mode-tabs button.is-active {
+    color: #fff;
+    background: var(--green);
+}
+
+button.secondary {
+    color: var(--green-dark);
+    background: #fff;
+}
+
+.panel,
+.event-form,
+.qr-result,
+.event-card {
+    padding: clamp(18px, 4vw, 30px);
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-top: 3px solid var(--green);
+    border-radius: 8px;
+}
+
+.event-summary {
+    margin-bottom: 18px;
+    padding: 16px;
+    color: var(--green-dark);
+    background: #edf7f1;
+    border-right: 4px solid var(--green);
+    line-height: 1.8;
+}
+
+form {
+    display: grid;
+    gap: 16px;
+}
+
+label {
+    display: grid;
+    gap: 8px;
+    font-weight: 700;
+}
+
+input,
+select {
+    width: 100%;
+    min-height: 48px;
+    padding: 10px 12px;
+    border: 1px solid #b9c9c0;
+    border-radius: 6px;
+    background: #fff;
+}
+
+input:focus,
+select:focus,
+button:focus-visible {
+    outline: 3px solid rgba(7, 132, 68, 0.2);
+    outline-offset: 2px;
+}
+
+.form-message {
+    min-height: 24px;
+    margin: 0;
+    color: var(--green);
+    font-weight: 700;
+}
+
+.form-message.error {
+    color: var(--red);
+}
+
+.workspace-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 14px;
+    margin-bottom: 22px;
+}
+
+.event-form {
+    margin-bottom: 18px;
+}
+
+.form-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 12px;
+}
+
+.qr-result {
+    margin-bottom: 24px;
+    text-align: center;
+}
+
+#qr-code {
+    width: fit-content;
+    margin: 0 auto 18px;
+    padding: 14px;
+    background: #fff;
+}
+
+#qr-code img,
+#qr-code canvas {
+    display: block;
+    max-width: 100%;
+    height: auto;
+}
+
+.event-list {
+    display: grid;
+    gap: 14px;
+}
+
+.event-card h3 {
+    margin-top: 0;
+}
+
+.event-meta {
+    color: var(--muted);
+    line-height: 1.8;
+}
+
+.attendee-list {
+    margin: 14px 0 0;
+    padding: 0;
+    list-style: none;
+}
+
+.attendee-list li {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 10px 0;
+    border-top: 1px solid var(--line);
+}
+
+[hidden] {
+    display: none !important;
+}
+
+@media (max-width: 680px) {
+    .site-header,
+    .workspace-header {
+        align-items: stretch;
+        flex-direction: column;
+    }
+
+    .brand img {
+        width: min(270px, 80vw);
+        height: 74px;
+    }
+
+    .mode-tabs,
+    .form-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .mode-tabs {
+        display: grid;
+    }
+
+    .attendee-list li {
+        flex-direction: column;
+        gap: 4px;
+    }
+}

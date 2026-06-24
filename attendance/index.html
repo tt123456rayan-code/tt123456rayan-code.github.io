@@ -1,0 +1,117 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; img-src 'self' data:; style-src 'self'; script-src 'self'; connect-src https://*.supabase.co; object-src 'none'; base-uri 'self'; form-action 'self'">
+    <title>نظام الحضور | مبادرة همّة</title>
+    <link rel="stylesheet" href="./styles.css">
+</head>
+<body>
+    <header class="site-header">
+        <a class="brand" href="../index.html">
+            <img src="../assets/images/logo-pdf-optimized.webp" alt="شعار مبادرة همّة">
+        </a>
+        <a class="back-link" href="../index.html#dashboard">العودة إلى لوحة الأعضاء</a>
+    </header>
+
+    <main class="page-shell">
+        <section class="intro">
+            <p class="eyebrow">نظام حضور الاجتماعات والفعاليات</p>
+            <h1>تسجيل الحضور عبر QR</h1>
+            <p>امسح رمز الفعالية، ثم أكّد حضورك باستخدام بيانات العضوية.</p>
+        </section>
+
+        <nav class="mode-tabs" aria-label="خيارات نظام الحضور">
+            <button class="is-active" type="button" data-mode="checkin">تسجيل الحضور</button>
+            <button type="button" data-mode="admin">إدارة رموز الحضور</button>
+        </nav>
+
+        <section class="panel" id="checkin-panel">
+            <div id="event-summary" class="event-summary" aria-live="polite">
+                افتح رابط QR الخاص بالاجتماع لتسجيل الحضور.
+            </div>
+            <form id="checkin-form" hidden>
+                <label>
+                    رقم العضوية
+                    <input id="checkin-membership" autocomplete="username" required>
+                </label>
+                <label>
+                    كلمة المرور
+                    <input id="checkin-password" type="password" autocomplete="current-password" required>
+                </label>
+                <button type="submit">تأكيد الحضور</button>
+                <p class="form-message" id="checkin-message" aria-live="polite"></p>
+            </form>
+        </section>
+
+        <section class="panel" id="admin-panel" hidden>
+            <form id="admin-login-form">
+                <h2>دخول مسؤول الاجتماعات</h2>
+                <label>
+                    رقم العضوية
+                    <input id="admin-membership" autocomplete="username" required>
+                </label>
+                <label>
+                    كلمة المرور
+                    <input id="admin-password" type="password" autocomplete="current-password" required>
+                </label>
+                <button type="submit">دخول الإدارة</button>
+                <p class="form-message" id="admin-login-message" aria-live="polite"></p>
+            </form>
+
+            <div id="admin-workspace" hidden>
+                <div class="workspace-header">
+                    <div>
+                        <p class="eyebrow">المسؤول</p>
+                        <h2 id="admin-name">-</h2>
+                    </div>
+                    <button class="secondary" id="admin-refresh" type="button">تحديث السجل</button>
+                </div>
+
+                <form id="event-form" class="event-form">
+                    <h2>إنشاء رمز حضور</h2>
+                    <label>
+                        الاجتماع
+                        <select id="event-meeting" required></select>
+                    </label>
+                    <div class="form-grid">
+                        <label>
+                            فتح التسجيل
+                            <input id="event-opens" type="datetime-local" required>
+                        </label>
+                        <label>
+                            بداية التأخير
+                            <input id="event-late" type="datetime-local" required>
+                        </label>
+                        <label>
+                            إغلاق التسجيل
+                            <input id="event-closes" type="datetime-local" required>
+                        </label>
+                    </div>
+                    <button type="submit">توليد QR</button>
+                    <p class="form-message" id="event-message" aria-live="polite"></p>
+                </form>
+
+                <section class="qr-result" id="qr-result" hidden>
+                    <div id="qr-code"></div>
+                    <label>
+                        رابط الحضور
+                        <input id="attendance-url" readonly dir="ltr">
+                    </label>
+                    <button class="secondary" id="copy-url" type="button">نسخ الرابط</button>
+                </section>
+
+                <section>
+                    <h2>سجل الفعاليات والحضور</h2>
+                    <div class="event-list" id="event-list"></div>
+                </section>
+            </div>
+        </section>
+    </main>
+
+    <script src="../assets/js/env.js"></script>
+    <script src="./vendor/qrcode.min.js"></script>
+    <script src="./app.js"></script>
+</body>
+</html>

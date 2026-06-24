@@ -32,8 +32,15 @@
 ## Supabase
 - `.env.local`: يحتوي مفاتيح Supabase محليًا، لا يضاف للـ ZIP ولا ينشر.
 - `supabase/`: ملفات SQL/مراجع قاعدة البيانات.
+- `supabase/attendance-qr.sql`: جداول ودوال نظام حضور الاجتماعات عبر QR.
 - الجداول المهمة حسب العمل السابق: `committee_members`, `members`, `ai_usage_limits`, `ai_chat_logs`.
 - أي تعديل على الصلاحيات أو قاعدة البيانات يجب أن يكون موجّهًا ومتحققًا، بدون تغيير schema إلا للضرورة.
+
+## نظام الحضور
+- `attendance/index.html`: صفحة تسجيل الحضور وإدارة رموز QR.
+- `attendance/app.js`: استدعاءات Supabase وتسجيل الحضور وعرض السجل.
+- `attendance/styles.css`: تنسيق صفحة الحضور المتجاوب.
+- `attendance/vendor/qrcode.min.js`: مولد QR محلي خفيف.
 
 ## البناء والنشر
 - `package.json`: يحتوي `npm run build`.
