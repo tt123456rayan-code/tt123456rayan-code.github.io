@@ -21,6 +21,11 @@
             const dashboardViewButtons = Array.from(document.querySelectorAll("[data-dashboard-view]"));
             const dashboardPanels = Array.from(document.querySelectorAll("[id^='dashboard-'][id$='-panel']"));
             const dashboardLogout = document.getElementById("dashboard-logout");
+            const meetingForm = document.getElementById("meeting-form");
+            const meetingsList = document.getElementById("meetings-list");
+            const meetingsStatus = document.getElementById("meetings-status");
+            const meetingMessage = document.getElementById("meeting-message");
+            let activeMemberSession = null;
             const structureTabs = Array.from(document.querySelectorAll("[data-structure-filter]"));
             const structureCards = Array.from(document.querySelectorAll("[data-structure-groups]"));
             const structureCurrentTitle = document.getElementById("structure-current-title");
@@ -770,6 +775,85 @@
                 return normalizeMemberLoginResponse(data);
             }
 
+            async function memberRpc(functionName, body) {
+                const supabaseConfig = window.HIMMA_SUPABASE_CONFIG;
+                if (!supabaseConfig || !supabaseConfig.url || !supabaseConfig.anonKey) {
+                    throw new Error("Missing Supabase public config");
+                }
+                const response = await fetch(supabaseConfig.url.replace(/\/$/, "") + "/rest/v1/rpc/" + functionName, {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "apikey": supabaseConfig.anonKey,
+                        "Authorization": "Bearer " + supabaseConfig.anonKey
+                    },
+                    body: JSON.stringify(body)
+                });
+                if (!response.ok) {
+                    throw new Error("Member RPC failed");
+                }
+                return response.json();
+            }
+
+            function escapeHtml(value) {
+                return String(value || "")
+                    .replace(/&/g, "&amp;")
+                    .replace(/</g, "&lt;")
+                    .replace(/>/g, "&gt;")
+                    .replace(/"/g, "&quot;")
+                    .replace(/'/g, "&#039;");
+            }
+
+            function renderMeetings(meetings) {
+                if (!meetingsList) return;
+                meetingsList.textContent = "";
+                if (!Array.isArray(meetings) || !meetings.length) {
+                    meetingsList.innerHTML = '<p class="form-message">لا توجد اجتماعات منشورة حاليًا.</p>';
+                    return;
+                }
+                meetings.forEach((meeting) => {
+                    const card = document.createElement("article");
+                    card.className = "meeting-card";
+                    const location = String(meeting.location_or_link || "");
+                    const safeLocation = escapeHtml(location);
+                    const locationMarkup = /^https?:\/\//i.test(location)
+                        ? `<a href="${safeLocation}" target="_blank" rel="noopener noreferrer">${safeLocation}</a>`
+                        : `<strong>${safeLocation}</strong>`;
+                    card.innerHTML = `
+                        <h4>${escapeHtml(meeting.title || "")}</h4>
+                        <div class="meeting-meta-grid">
+                            <div class="meeting-meta-item"><span>التاريخ</span><strong>${escapeHtml(meeting.meeting_date || "")}</strong></div>
+                            <div class="meeting-meta-item"><span>الوقت</span><strong>${escapeHtml(meeting.meeting_time || "")}</strong></div>
+                            <div class="meeting-meta-item"><span>النوع</span><strong>${meeting.meeting_type === "online" ? "إلكتروني" : "وجاهي"}</strong></div>
+                            <div class="meeting-meta-item"><span>المكان أو الرابط</span>${locationMarkup}</div>
+                        </div>
+                        <p class="meeting-details">${escapeHtml(meeting.details || "")}</p>
+                    `;
+                    meetingsList.appendChild(card);
+                });
+            }
+
+            async function loadMemberMeetings() {
+                if (!activeMemberSession) return;
+                if (meetingsStatus) meetingsStatus.textContent = "جاري تحميل الاجتماعات...";
+                const data = await memberRpc("member_meetings_portal", {
+                    input_membership_id: activeMemberSession.membershipId,
+                    input_password: activeMemberSession.password
+                });
+                if (!data || data.success === false) {
+                    throw new Error("meetings_load_failed");
+                }
+                if (meetingForm) {
+                    meetingForm.hidden = !data.can_create_meetings;
+                }
+                renderMeetings(data.meetings || []);
+                if (meetingsStatus) {
+                    meetingsStatus.textContent = data.can_create_meetings
+                        ? "يمكنك إنشاء اجتماع جديد."
+                        : "يمكنك مشاهدة الاجتماعات المنشورة.";
+                }
+            }
+
             structureTabs.forEach((tab) => {
                 tab.addEventListener("click", () => {
                     setStructureFilter(tab.dataset.structureFilter);
@@ -1038,6 +1122,12 @@
                         }
 
                         renderMemberProfile(member);
+                        activeMemberSession = { membershipId, password };
+                        try {
+                            await loadMemberMeetings();
+                        } catch (_) {
+                            if (meetingsStatus) meetingsStatus.textContent = "تعذر تحميل الاجتماعات حاليًا.";
+                        }
                         if (loginMessage) {
                             loginMessage.textContent = currentLanguage === "en" ? "Signed in successfully." : "تم تسجيل الدخول بنجاح.";
                         }
@@ -1064,8 +1154,43 @@
 
             if (dashboardLogout) {
                 dashboardLogout.addEventListener("click", () => {
+                    activeMemberSession = null;
+                    if (meetingForm) meetingForm.hidden = true;
+                    if (meetingsList) meetingsList.textContent = "";
                     renderMemberProfile({});
                     showSection("login");
+                });
+            }
+
+            if (meetingForm) {
+                meetingForm.addEventListener("submit", async (event) => {
+                    event.preventDefault();
+                    if (!activeMemberSession) return;
+                    const submitButton = document.getElementById("meeting-submit-button");
+                    if (submitButton) submitButton.disabled = true;
+                    if (meetingMessage) meetingMessage.textContent = "جاري نشر الاجتماع...";
+                    try {
+                        const result = await memberRpc("member_create_meeting", {
+                            input_membership_id: activeMemberSession.membershipId,
+                            input_password: activeMemberSession.password,
+                            input_title: document.getElementById("meeting-title").value.trim(),
+                            input_meeting_date: document.getElementById("meeting-date").value,
+                            input_meeting_time: document.getElementById("meeting-time").value,
+                            input_location_or_link: document.getElementById("meeting-location").value.trim(),
+                            input_meeting_type: document.getElementById("meeting-type").value,
+                            input_details: document.getElementById("meeting-details").value.trim()
+                        });
+                        if (!result || result.success === false) {
+                            throw new Error("meeting_create_failed");
+                        }
+                        meetingForm.reset();
+                        if (meetingMessage) meetingMessage.textContent = "تم نشر الاجتماع وسيظهر الآن في نظام QR.";
+                        await loadMemberMeetings();
+                    } catch (_) {
+                        if (meetingMessage) meetingMessage.textContent = "تعذر نشر الاجتماع. تأكد من الصلاحية والبيانات.";
+                    } finally {
+                        if (submitButton) submitButton.disabled = false;
+                    }
                 });
             }
 

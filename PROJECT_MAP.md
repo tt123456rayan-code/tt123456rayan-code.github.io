@@ -33,6 +33,7 @@
 - `.env.local`: يحتوي مفاتيح Supabase محليًا، لا يضاف للـ ZIP ولا ينشر.
 - `supabase/`: ملفات SQL/مراجع قاعدة البيانات.
 - `supabase/attendance-qr.sql`: جداول ودوال نظام حضور الاجتماعات عبر QR.
+- `supabase/member-meetings-rpc.sql`: دوال تحميل وإنشاء الاجتماعات من تسجيل دخول الأعضاء الحالي.
 - الجداول المهمة حسب العمل السابق: `committee_members`, `members`, `ai_usage_limits`, `ai_chat_logs`.
 - أي تعديل على الصلاحيات أو قاعدة البيانات يجب أن يكون موجّهًا ومتحققًا، بدون تغيير schema إلا للضرورة.
 
