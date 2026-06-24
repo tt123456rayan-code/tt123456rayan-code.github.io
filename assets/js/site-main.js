@@ -26,6 +26,8 @@
             const meetingsStatus = document.getElementById("meetings-status");
             const meetingMessage = document.getElementById("meeting-message");
             let activeMemberSession = null;
+            let signedInMember = null;
+            const memberSessionKey = "himma_member_session_v1";
             const structureTabs = Array.from(document.querySelectorAll("[data-structure-filter]"));
             const structureCards = Array.from(document.querySelectorAll("[data-structure-groups]"));
             const structureCurrentTitle = document.getElementById("structure-current-title");
@@ -477,7 +479,8 @@
 
 
             function showSection(sectionId, updateHash = true) {
-                const targetId = pageIds.has(sectionId) ? sectionId : "home";
+                const requestedId = sectionId === "login" && signedInMember ? "dashboard" : sectionId;
+                const targetId = pageIds.has(requestedId) ? requestedId : "home";
                 trackSiteEvent("section_view", { section: targetId });
 
                 pages.forEach((page) => {
@@ -854,6 +857,57 @@
                 }
             }
 
+            function storeMemberSession(member) {
+                if (!member || typeof member !== "object") return;
+                const avatar = member.avatar_url || member.image_url || "";
+                const safeMember = {
+                    member_id: member.member_id || member.id || "",
+                    membership_id: member.membership_id || "",
+                    membership_number: member.membership_number || "",
+                    name: member.name || "",
+                    full_name: member.full_name || "",
+                    committee: member.committee || "",
+                    role: member.role || "",
+                    avatar_url: typeof avatar === "string" && avatar.length <= 2000 ? avatar : ""
+                };
+                signedInMember = safeMember;
+                try {
+                    sessionStorage.setItem(memberSessionKey, JSON.stringify(safeMember));
+                } catch (_) {
+                    // The active in-memory session still works when storage is unavailable.
+                }
+            }
+
+            function restoreMemberSession() {
+                try {
+                    const stored = JSON.parse(sessionStorage.getItem(memberSessionKey) || "null");
+                    if (!stored || (!stored.membership_id && !stored.membership_number)) return false;
+                    signedInMember = stored;
+                    renderMemberProfile(stored);
+                    if (meetingForm) meetingForm.hidden = true;
+                    if (meetingsStatus) {
+                        meetingsStatus.textContent = "أعد تسجيل الدخول فقط عند الحاجة لإدارة الاجتماعات.";
+                    }
+                    return true;
+                } catch (_) {
+                    try {
+                        sessionStorage.removeItem(memberSessionKey);
+                    } catch (_) {
+                        // Ignore storage restrictions and continue as signed out.
+                    }
+                    return false;
+                }
+            }
+
+            function clearMemberSession() {
+                signedInMember = null;
+                try {
+                    sessionStorage.removeItem(memberSessionKey);
+                } catch (_) {
+                    // Nothing else is required when storage is unavailable.
+                }
+            }
+
             structureTabs.forEach((tab) => {
                 tab.addEventListener("click", () => {
                     setStructureFilter(tab.dataset.structureFilter);
@@ -1122,6 +1176,7 @@
                         }
 
                         renderMemberProfile(member);
+                        storeMemberSession(member);
                         activeMemberSession = { membershipId, password };
                         try {
                             await loadMemberMeetings();
@@ -1155,6 +1210,7 @@
             if (dashboardLogout) {
                 dashboardLogout.addEventListener("click", () => {
                     activeMemberSession = null;
+                    clearMemberSession();
                     if (meetingForm) meetingForm.hidden = true;
                     if (meetingsList) meetingsList.textContent = "";
                     renderMemberProfile({});
@@ -1202,6 +1258,7 @@
             applyLogoMode();
             trackSiteEvent("visit", { section: window.location.hash.replace("#", "") || "home" });
 
+            restoreMemberSession();
             const initialSection = window.location.hash.replace("#", "");
             if (initialSection) {
                 showSection(initialSection, false);
