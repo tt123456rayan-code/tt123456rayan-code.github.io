@@ -207,13 +207,19 @@
         return state.viewer && state.viewer.admin_role === "super_admin";
     }
 
-    async function refreshPortal() {
+    async function refreshPortal(preservedRole = null, preservedMemberId = "") {
         const data = await rpc("member_evolution_get_portal", {
             input_membership_number: state.membershipNumber,
             input_password: state.password
         });
         if (!data || data.success === false) {
             throw new Error("invalid_login");
+        }
+        if (preservedRole && Array.isArray(data.members)) {
+            const member = data.members.find((item) => item.id === preservedMemberId);
+            if (member && !member.admin_role) {
+                member.admin_role = preservedRole === "none" ? null : preservedRole;
+            }
         }
         renderShell(data);
     }
@@ -313,21 +319,27 @@
 
     els.permissionButton.addEventListener("click", async () => {
         if (!state.selectedMember || !canGrantPermissions()) return;
+        const targetMemberId = state.selectedMember.id;
+        const requestedRole = els.permissionSelect.value;
         setMessage(els.evaluationMessage, "جاري تحديث الصلاحية...");
         try {
             const result = await rpc("member_evolution_set_admin_role", {
                 admin_membership_number: state.membershipNumber,
                 admin_password: state.password,
-                target_member_id: state.selectedMember.id,
-                new_admin_role: els.permissionSelect.value
+                target_member_id: targetMemberId,
+                new_admin_role: requestedRole
             });
             if (!result || result.success === false) {
                 throw new Error("permission_failed");
             }
+            const savedRole = result.role || requestedRole;
+            await refreshPortal(savedRole, targetMemberId);
+            const updated = state.members.find((member) => member.id === targetMemberId);
+            if (!updated) {
+                throw new Error("member_refresh_failed");
+            }
+            selectMember(updated);
             setMessage(els.evaluationMessage, "تم تحديث الصلاحية.");
-            await refreshPortal();
-            const updated = state.members.find((member) => member.id === els.targetMemberId.value);
-            if (updated) selectMember(updated);
         } catch {
             setMessage(els.evaluationMessage, "تعذر تحديث الصلاحية.", true);
         }
