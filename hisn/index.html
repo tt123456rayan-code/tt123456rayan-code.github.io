@@ -1,0 +1,767 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>حِصن — البنية التحتية الآمنة لبياناتك</title>
+<meta name="description" content="حِصن: منصّة تشفير وحماية بيانات على مستوى المؤسسات. تشفير لحظي، إدارة مفاتيح، إقامة بيانات محلية، ونشر سحابي أو داخلي أو هجين — مع جاهزية 99.99%.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#060a12; --bg2:#080d18;
+    --panel:rgba(255,255,255,.045); --panel-line:rgba(255,255,255,.09);
+    --ink:#f4f9ff; --muted:#9db0cc; --muted2:#6f829e;
+    --cyan:#36d6ff; --blue:#5b8cff; --green:#43f5a0;
+    --pad:clamp(1.15rem, 5vw, 6.5rem); --maxw:1280px; --r:16px;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{scroll-behavior:smooth}
+  body{font-family:"IBM Plex Sans Arabic",system-ui,sans-serif;background:var(--bg);color:var(--ink);line-height:1.6;-webkit-font-smoothing:antialiased;overflow-x:hidden;position:relative}
+  .mono{font-family:"JetBrains Mono",monospace}
+  a{color:inherit;text-decoration:none}
+  section{position:relative;z-index:1}
+  ::selection{background:rgba(54,214,255,.3);color:#fff}
+  svg{stroke-linecap:round;stroke-linejoin:round}
+
+  #bg-net{position:fixed;inset:0;z-index:0;pointer-events:none;opacity:1}
+  #cursor-glow{position:fixed;width:660px;height:660px;border-radius:50%;z-index:0;pointer-events:none;left:0;top:0;transform:translate(-50%,-50%);opacity:0;transition:opacity .4s;background:radial-gradient(circle, rgba(54,214,255,.20), rgba(91,140,255,.08) 38%, transparent 68%);mix-blend-mode:screen}
+  .container{max-width:var(--maxw);margin:0 auto;width:100%}
+
+  /* announcement */
+  .topbar{position:relative;z-index:6;display:flex;align-items:center;justify-content:center;gap:.8rem;padding:.55rem 1rem;font-size:.82rem;color:#cfe8ff;background:linear-gradient(90deg, rgba(54,214,255,.12), rgba(91,140,255,.12));border-bottom:1px solid rgba(54,214,255,.18)}
+  .topbar b{color:var(--cyan)}
+  .tb-ic{width:15px;height:15px;vertical-align:-3px;color:var(--cyan)}
+  .topbar .x{position:absolute;inset-inline-end:1rem;cursor:pointer;color:var(--muted);background:none;border:none;display:grid;place-items:center}
+  .topbar .x svg{width:14px;height:14px}
+  .topbar .x:hover{color:#fff}
+
+  /* nav */
+  .nav{position:sticky;top:0;z-index:50;transition:.3s;border-bottom:1px solid transparent}
+  .nav.scrolled{background:rgba(6,10,18,.82);backdrop-filter:blur(14px);border-bottom-color:rgba(255,255,255,.07)}
+  .nav__in{display:flex;align-items:center;justify-content:space-between;gap:1rem;padding:.9rem var(--pad)}
+  .brand{display:flex;align-items:center;gap:.65rem;font-weight:700;font-size:1.3rem;letter-spacing:.3px}
+  .brand svg{width:34px;height:34px;flex:none;filter:drop-shadow(0 0 10px rgba(54,214,255,.5))}
+  .brand small{font-family:"JetBrains Mono",monospace;font-size:.6rem;color:var(--muted2);letter-spacing:3px;display:block;margin-top:2px}
+  .nav__links{display:flex;gap:1.9rem;list-style:none}
+  .nav__links a{color:var(--muted);font-size:.95rem;font-weight:500;transition:color .2s;position:relative}
+  .nav__links a:hover{color:var(--ink)}
+  .nav__links a::after{content:"";position:absolute;inset-inline-start:0;bottom:-6px;height:2px;width:0;background:var(--cyan);transition:.25s;border-radius:2px}
+  .nav__links a:hover::after{width:100%}
+  .nav__actions{display:flex;align-items:center;gap:.9rem}
+  .nav__burger{display:none;flex-direction:column;gap:5px;background:none;border:none;cursor:pointer;padding:6px}
+  .nav__burger span{width:24px;height:2px;background:var(--ink);border-radius:2px;transition:.3s}
+
+  .btn{font-family:inherit;font-size:.97rem;font-weight:600;cursor:pointer;white-space:nowrap;padding:.85rem 1.6rem;border-radius:11px;border:1px solid transparent;display:inline-flex;align-items:center;gap:.55rem;transition:.25s}
+  .btn svg{width:18px;height:18px;flex:none}
+  .btn--primary{background:linear-gradient(135deg,var(--cyan),var(--blue));color:#04121f;box-shadow:0 8px 28px rgba(54,214,255,.32)}
+  .btn--primary:hover{transform:translateY(-2px);box-shadow:0 12px 38px rgba(54,214,255,.5)}
+  .btn--ghost{background:rgba(255,255,255,.04);color:var(--ink);border-color:var(--panel-line);backdrop-filter:blur(6px)}
+  .btn--ghost:hover{border-color:var(--cyan);background:rgba(54,214,255,.08)}
+  .btn--lg{padding:1.05rem 2.1rem;font-size:1.05rem}
+
+  .mobile{position:fixed;inset:0;z-index:49;background:rgba(6,10,18,.97);backdrop-filter:blur(12px);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1.6rem;transform:translateY(-100%);transition:.4s cubic-bezier(.7,0,.3,1);opacity:0}
+  .mobile.open{transform:translateY(0);opacity:1}
+  .mobile a{font-size:1.4rem;color:var(--ink);font-weight:600}
+  .mobile a:hover{color:var(--cyan)}
+
+  /* hero */
+  .hero{position:relative;min-height:100svh;display:flex;flex-direction:column;overflow:hidden;margin-top:-1px}
+  .hero__stage{position:absolute;inset:-8%;z-index:0;will-change:transform}
+  .hero__video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+  .hero__overlay{position:absolute;inset:0;z-index:1;pointer-events:none;background:radial-gradient(ellipse at 70% 42%, transparent 24%, rgba(3,6,12,.7) 100%),linear-gradient(to left, rgba(4,8,16,.86), rgba(4,8,16,.42) 58%, rgba(4,8,16,.14)),linear-gradient(to bottom, rgba(4,8,16,.6), transparent 20%, transparent 58%, rgba(6,10,18,.96))}
+  .hero__scan{position:absolute;inset:0;z-index:1;pointer-events:none;opacity:.5;mix-blend-mode:overlay;background:repeating-linear-gradient(0deg, rgba(255,255,255,.02) 0 1px, transparent 1px 3px)}
+  .hero__inner{position:relative;z-index:3;flex:1;display:flex;flex-direction:column;justify-content:center;padding:clamp(2rem,7vh,5rem) var(--pad);max-width:var(--maxw);margin:0 auto;width:100%}
+  .eyebrow{display:inline-flex;align-items:center;gap:.6rem;align-self:flex-start;font-size:.78rem;letter-spacing:2px;color:var(--cyan);padding:.45rem .9rem;border:1px solid rgba(54,214,255,.3);border-radius:999px;background:rgba(54,214,255,.06);margin-bottom:1.6rem;direction:ltr}
+  .eyebrow .dot{width:7px;height:7px;border-radius:50%;background:var(--cyan);box-shadow:0 0 10px var(--cyan);animation:pulse 1.8s infinite}
+  h1{font-size:clamp(2.4rem,6.2vw,5rem);font-weight:700;line-height:1.08;letter-spacing:-.5px;max-width:17ch;margin-bottom:1.4rem;text-shadow:0 2px 50px rgba(0,0,0,.5)}
+  h1 .accent{background:linear-gradient(120deg,var(--cyan),var(--blue));-webkit-background-clip:text;background-clip:text;color:transparent}
+  .lede{font-size:clamp(1.05rem,1.6vw,1.32rem);color:#c4d4ea;font-weight:300;line-height:1.85;max-width:56ch;margin-bottom:2.3rem;text-shadow:0 2px 16px rgba(2,5,10,.6)}
+  .hero .actions{display:flex;gap:1rem;flex-wrap:wrap;margin-bottom:2.4rem}
+  .hero__trust{display:flex;align-items:center;gap:1.6rem;flex-wrap:wrap;color:var(--muted);font-size:.86rem}
+  .hero__trust .it{display:flex;align-items:center;gap:.5rem}
+  .hero__trust svg{width:18px;height:18px;color:var(--green)}
+  .hud{position:absolute;z-index:3;font-size:.7rem;letter-spacing:1.5px;color:rgba(157,176,204,.6)}
+  .hud--l{bottom:1.3rem;inset-inline-start:var(--pad)}
+  .hud--r{bottom:1.3rem;inset-inline-end:var(--pad);display:flex;align-items:center;gap:.5rem}
+  .hud--r .dot{width:7px;height:7px;border-radius:50%;background:var(--green);box-shadow:0 0 10px var(--green);animation:pulse 2s infinite}
+
+  /* sections */
+  .sec{padding:clamp(3.5rem,9vh,7.5rem) var(--pad)}
+  .sec--tint{background:linear-gradient(180deg, rgba(6,10,18,.40), rgba(8,13,24,.54))}
+  .sec--solid{background:linear-gradient(180deg, rgba(6,10,18,.72), rgba(7,12,22,.80))}
+  .khead{max-width:var(--maxw);margin:0 auto 3rem}
+  .khead.center{text-align:center}
+  .k{color:var(--cyan);font-size:.8rem;letter-spacing:2.5px;direction:ltr;display:inline-block;margin-bottom:.9rem;font-family:"JetBrains Mono",monospace}
+  .khead h2{font-size:clamp(1.7rem,3.6vw,2.7rem);font-weight:700;line-height:1.2;max-width:22ch;letter-spacing:-.3px}
+  .khead.center h2{margin-inline:auto}
+  .khead p{color:var(--muted);margin-top:1rem;max-width:58ch;font-weight:300;font-size:1.05rem}
+  .khead.center p{margin-inline:auto}
+  .sec h2,.khead p,.lede,.stat .l,.trust-cap,.cinfo p{text-shadow:0 2px 16px rgba(2,5,10,.6)}
+
+  .logos{max-width:var(--maxw);margin:0 auto;display:flex;align-items:center;justify-content:center;gap:clamp(1.5rem,5vw,4rem);flex-wrap:wrap;opacity:.75}
+  .logos .lg{font-weight:700;font-size:1.15rem;color:var(--muted);display:flex;align-items:center;gap:.5rem;letter-spacing:.5px;transition:.25s}
+  .logos .lg:hover{color:var(--ink)}
+  .logos .lg .d{width:9px;height:9px;border-radius:2px;background:linear-gradient(135deg,var(--cyan),var(--blue))}
+  .trust-cap{text-align:center;color:var(--muted2);font-size:.82rem;letter-spacing:1px;margin-bottom:2rem}
+
+  .grid{max-width:var(--maxw);margin:0 auto;display:grid;gap:1.3rem}
+  .g3{grid-template-columns:repeat(3,1fr)}
+  .card{background:linear-gradient(160deg,rgba(255,255,255,.05),rgba(255,255,255,.012));border:1px solid var(--panel-line);border-radius:var(--r);padding:1.7rem;transition:transform .3s, border-color .3s, box-shadow .3s;transform-style:preserve-3d;position:relative;overflow:hidden}
+  .card::before{content:"";position:absolute;inset:0;background:radial-gradient(300px circle at var(--mx,50%) var(--my,0%), rgba(54,214,255,.1), transparent 70%);opacity:0;transition:opacity .3s}
+  .card:hover::before{opacity:1}
+  .card:hover{border-color:rgba(54,214,255,.4);box-shadow:0 18px 44px rgba(0,0,0,.45)}
+  .card__ic{width:48px;height:48px;border-radius:13px;display:grid;place-items:center;margin-bottom:1.2rem;background:rgba(54,214,255,.1);border:1px solid rgba(54,214,255,.25);color:var(--cyan)}
+  .card__ic svg{width:24px;height:24px}
+  .card h3{font-size:1.18rem;font-weight:600;margin-bottom:.5rem}
+  .card p{color:var(--muted);font-size:.95rem;font-weight:300;line-height:1.75}
+
+  .arch{max-width:var(--maxw);margin:0 auto;display:grid;grid-template-columns:1.1fr .9fr;gap:2.5rem;align-items:start}
+  .stack{display:flex;flex-direction:column;gap:.7rem}
+  .layer{display:flex;align-items:center;gap:1rem;padding:1.15rem 1.3rem;border-radius:13px;border:1px solid var(--panel-line);background:linear-gradient(110deg,rgba(54,214,255,.06),rgba(255,255,255,.02));transition:.3s}
+  .layer:hover{border-color:rgba(54,214,255,.45);transform:translateX(-6px)}
+  .layer .ln{font-family:"JetBrains Mono",monospace;color:var(--cyan);font-size:.85rem;opacity:.8;min-width:34px}
+  .layer .lt{font-weight:600}
+  .layer .ld{color:var(--muted);font-size:.85rem;font-weight:300}
+  .layer__core{background:linear-gradient(110deg,rgba(67,245,160,.1),rgba(54,214,255,.05));border-color:rgba(67,245,160,.3)}
+  .deploy{display:flex;flex-direction:column;gap:1rem}
+  .dcard{padding:1.3rem;border-radius:13px;border:1px solid var(--panel-line);background:var(--panel);transition:.3s}
+  .dcard:hover{border-color:rgba(54,214,255,.4);background:rgba(54,214,255,.05)}
+  .dcard h4{display:flex;align-items:center;gap:.6rem;font-size:1.05rem;margin-bottom:.35rem}
+  .dcard h4 .di{display:inline-grid;place-items:center;width:22px;height:22px;color:var(--cyan);flex:none}
+  .dcard h4 .di svg{width:20px;height:20px}
+  .dcard h4 .tag{margin-inline-start:auto;font-size:.68rem;font-family:"JetBrains Mono",monospace;color:var(--cyan);border:1px solid rgba(54,214,255,.3);padding:.15rem .5rem;border-radius:6px}
+  .dcard p{color:var(--muted);font-size:.88rem;font-weight:300}
+  .infra-hl{display:grid;grid-template-columns:repeat(2,1fr);gap:.7rem;margin-top:.4rem}
+  .infra-hl .h{display:flex;align-items:center;gap:.55rem;font-size:.86rem;color:#cddcef}
+  .infra-hl svg{width:17px;height:17px;color:var(--green);flex:none}
+
+  .badges{max-width:var(--maxw);margin:0 auto 2.6rem;display:flex;flex-wrap:wrap;justify-content:center;gap:1rem}
+  .badge{display:flex;align-items:center;gap:.6rem;padding:.8rem 1.3rem;border-radius:12px;border:1px solid var(--panel-line);background:var(--panel);font-weight:600;font-size:.95rem}
+  .badge .ck{width:22px;height:22px;border-radius:50%;background:rgba(67,245,160,.15);display:grid;place-items:center;color:var(--green)}
+  .badge .ck svg{width:13px;height:13px}
+  .badge small{display:block;color:var(--muted2);font-size:.72rem;font-weight:400}
+  .guarantees{max-width:var(--maxw);margin:0 auto;display:grid;grid-template-columns:repeat(4,1fr);gap:1.3rem}
+  .grow{text-align:center;padding:1.6rem 1rem;border-radius:14px;border:1px solid var(--panel-line);background:var(--panel)}
+  .grow svg{width:30px;height:30px;color:var(--cyan);margin-bottom:.7rem}
+  .grow h4{font-size:1rem;margin-bottom:.3rem}
+  .grow p{color:var(--muted);font-size:.85rem;font-weight:300}
+
+  .impact{background:linear-gradient(180deg, rgba(54,214,255,.05), rgba(91,140,255,.04));border-block:1px solid rgba(54,214,255,.12)}
+  .stats{max-width:var(--maxw);margin:0 auto;display:grid;grid-template-columns:repeat(4,1fr);gap:1.5rem;text-align:center}
+  .stat .n{font-size:clamp(2rem,4.5vw,3.2rem);font-weight:700;line-height:1;font-family:"JetBrains Mono",monospace;background:linear-gradient(120deg,var(--cyan),var(--blue));-webkit-background-clip:text;background-clip:text;color:transparent}
+  .stat .l{color:var(--muted);margin-top:.6rem;font-size:.92rem}
+
+  .toggle{display:flex;align-items:center;justify-content:center;gap:1rem;margin:0 auto 2.6rem;font-size:.95rem;color:var(--muted)}
+  .toggle b{color:var(--ink)}
+  .sw{width:58px;height:30px;border-radius:999px;border:1px solid var(--panel-line);background:rgba(255,255,255,.06);position:relative;cursor:pointer;transition:.3s}
+  .sw::after{content:"";position:absolute;top:3px;inset-inline-start:3px;width:22px;height:22px;border-radius:50%;background:linear-gradient(135deg,var(--cyan),var(--blue));transition:.3s}
+  .sw.on{background:rgba(54,214,255,.25)}
+  .sw.on::after{transform:translateX(-28px)}
+  .save{font-family:"JetBrains Mono",monospace;font-size:.72rem;color:var(--green);border:1px solid rgba(67,245,160,.35);padding:.2rem .55rem;border-radius:6px}
+  .prices{max-width:1120px;margin:0 auto;display:grid;grid-template-columns:repeat(3,1fr);gap:1.3rem;align-items:stretch}
+  .price{display:flex;flex-direction:column;padding:2rem 1.7rem;border-radius:18px;border:1px solid var(--panel-line);background:linear-gradient(170deg,rgba(255,255,255,.045),rgba(255,255,255,.012));transition:.3s;position:relative}
+  .price:hover{transform:translateY(-5px);border-color:rgba(54,214,255,.35)}
+  .price.feat{border-color:rgba(54,214,255,.55);background:linear-gradient(170deg,rgba(54,214,255,.1),rgba(91,140,255,.04));box-shadow:0 20px 60px rgba(54,214,255,.18)}
+  .price .pop{position:absolute;top:-13px;inset-inline-start:50%;transform:translateX(50%);background:linear-gradient(135deg,var(--cyan),var(--blue));color:#04121f;font-size:.74rem;font-weight:700;padding:.3rem 1rem;border-radius:999px}
+  .price .pn{font-size:1.15rem;font-weight:700;margin-bottom:.3rem}
+  .price .pd{color:var(--muted);font-size:.86rem;font-weight:300;margin-bottom:1.3rem;min-height:2.6em}
+  .price .amt{display:flex;align-items:baseline;gap:.3rem;margin-bottom:.3rem}
+  .price .amt .cur{font-size:1.3rem;color:var(--muted);font-weight:600}
+  .price .amt .num{font-size:3rem;font-weight:700;font-family:"JetBrains Mono",monospace;line-height:1}
+  .price .amt .per{color:var(--muted);font-size:.9rem}
+  .price .note{color:var(--muted2);font-size:.78rem;margin-bottom:1.4rem;min-height:1.2em}
+  .price ul{list-style:none;display:flex;flex-direction:column;gap:.7rem;margin-bottom:1.7rem;flex:1}
+  .price li{display:flex;align-items:flex-start;gap:.6rem;font-size:.9rem;color:#cdddef}
+  .price li svg{width:18px;height:18px;color:var(--cyan);flex:none;margin-top:2px}
+  .price .btn{width:100%;justify-content:center}
+
+  .quotes{max-width:var(--maxw);margin:0 auto;display:grid;grid-template-columns:repeat(3,1fr);gap:1.3rem}
+  .quote{padding:1.8rem;border-radius:16px;border:1px solid var(--panel-line);background:var(--panel);display:flex;flex-direction:column}
+  .quote .mark{font-size:3rem;line-height:.5;color:rgba(54,214,255,.4);font-family:Georgia,serif;height:.7em}
+  .quote .metric{font-size:1.6rem;font-weight:700;color:var(--cyan);font-family:"JetBrains Mono",monospace;margin:.4rem 0 .6rem}
+  .quote p{color:#d4e2f3;font-weight:300;line-height:1.8;flex:1}
+  .quote .who{display:flex;align-items:center;gap:.8rem;margin-top:1.3rem;padding-top:1.1rem;border-top:1px solid var(--panel-line)}
+  .quote .av{width:42px;height:42px;border-radius:50%;background:linear-gradient(135deg,var(--cyan),var(--blue));display:grid;place-items:center;color:#04121f;font-weight:700;flex:none}
+  .quote .who b{font-size:.92rem;display:block}
+  .quote .who span{color:var(--muted);font-size:.8rem}
+
+  .faq{max-width:850px;margin:0 auto;display:flex;flex-direction:column;gap:.8rem}
+  .qa{border:1px solid var(--panel-line);border-radius:13px;background:var(--panel);overflow:hidden;transition:.3s}
+  .qa.open{border-color:rgba(54,214,255,.4);background:rgba(54,214,255,.04)}
+  .qa__q{width:100%;text-align:start;background:none;border:none;color:var(--ink);font-family:inherit;font-size:1.05rem;font-weight:600;padding:1.25rem 1.4rem;display:flex;align-items:center;gap:1rem;cursor:pointer}
+  .qa__q .ic{margin-inline-start:auto;color:var(--cyan);transition:.3s;flex:none;width:20px;height:20px}
+  .qa.open .qa__q .ic{transform:rotate(45deg)}
+  .qa__a{max-height:0;overflow:hidden;transition:max-height .4s ease;color:var(--muted);font-weight:300;line-height:1.8}
+  .qa__a div{padding:0 1.4rem 1.3rem}
+
+  .ctaband{position:relative;overflow:hidden;text-align:center;padding:clamp(3.5rem,8vh,6rem) var(--pad);background:linear-gradient(135deg,rgba(54,214,255,.12),rgba(91,140,255,.08));border-block:1px solid rgba(54,214,255,.15)}
+  .ctaband h2{font-size:clamp(1.8rem,4vw,3rem);font-weight:700;max-width:18ch;margin:0 auto 1rem;line-height:1.2}
+  .ctaband p{color:#c4d4ea;max-width:50ch;margin:0 auto 2rem;font-weight:300;font-size:1.1rem}
+  .ctaband .actions{display:flex;gap:1rem;justify-content:center;flex-wrap:wrap}
+
+  .contact{max-width:var(--maxw);margin:0 auto;display:grid;grid-template-columns:.9fr 1.1fr;gap:3rem;align-items:start}
+  .cinfo h3{font-size:1.5rem;margin-bottom:1rem}
+  .cinfo p{color:var(--muted);font-weight:300;margin-bottom:1.6rem}
+  .cmail{display:flex;align-items:center;gap:.9rem;padding:1.1rem 1.3rem;border-radius:13px;border:1px solid var(--panel-line);background:var(--panel);margin-bottom:1rem}
+  .cmail svg{width:24px;height:24px;color:var(--cyan);flex:none}
+  .cmail .em{font-family:"JetBrains Mono",monospace;font-size:.95rem;direction:ltr;word-break:break-all}
+  .cmail small{color:var(--muted2);font-size:.75rem;display:block}
+  .copy{margin-inline-start:auto;background:rgba(54,214,255,.12);border:1px solid rgba(54,214,255,.3);color:var(--cyan);border-radius:8px;padding:.4rem .7rem;cursor:pointer;font-family:inherit;font-size:.8rem;transition:.2s;flex:none}
+  .copy:hover{background:rgba(54,214,255,.22)}
+  .cextra{display:flex;flex-direction:column;gap:.7rem;margin-top:1.2rem}
+  .cextra .r{display:flex;align-items:center;gap:.6rem;color:#cdddef;font-size:.9rem}
+  .cextra svg{width:17px;height:17px;color:var(--green)}
+  .form{padding:2rem;border-radius:18px;border:1px solid var(--panel-line);background:linear-gradient(170deg,rgba(255,255,255,.045),rgba(255,255,255,.012))}
+  .form .row{display:grid;grid-template-columns:1fr 1fr;gap:1rem}
+  .field{margin-bottom:1.1rem;display:flex;flex-direction:column;gap:.4rem}
+  .field label{font-size:.85rem;color:var(--muted)}
+  .field input,.field textarea{font-family:inherit;background:rgba(0,0,0,.25);border:1px solid var(--panel-line);border-radius:10px;padding:.8rem 1rem;color:var(--ink);font-size:.95rem;transition:.2s;width:100%}
+  .field input:focus,.field textarea:focus{outline:none;border-color:var(--cyan);box-shadow:0 0 0 3px rgba(54,214,255,.12)}
+  .field textarea{resize:vertical;min-height:110px}
+  .form .btn{width:100%;justify-content:center}
+  .form .fnote{text-align:center;color:var(--muted2);font-size:.78rem;margin-top:.9rem}
+
+  /* payment / checkout modal */
+  .pay-note{width:auto;margin:-1.4rem auto 2.4rem;display:flex;align-items:center;justify-content:center;gap:.5rem;color:var(--muted);font-size:.85rem;font-weight:300}
+  .pay-note svg{width:16px;height:16px;color:var(--green);flex:none}
+  .modal{position:fixed;inset:0;z-index:100;display:flex;align-items:center;justify-content:center;padding:1.2rem;background:rgba(3,6,12,.72);backdrop-filter:blur(8px);opacity:0;visibility:hidden;transition:.3s}
+  .modal.open{opacity:1;visibility:visible}
+  .modal__card{position:relative;width:100%;max-width:520px;max-height:92vh;overflow-y:auto;background:linear-gradient(170deg,#0b1424,#080d18);border:1px solid rgba(54,214,255,.25);border-radius:20px;padding:2rem;box-shadow:0 30px 90px rgba(0,0,0,.6),0 0 60px rgba(54,214,255,.1);transform:translateY(20px) scale(.98);transition:.35s}
+  .modal.open .modal__card{transform:none}
+  .modal__x{position:absolute;inset-inline-end:1rem;top:1rem;width:34px;height:34px;border-radius:9px;border:1px solid var(--panel-line);background:rgba(255,255,255,.04);color:var(--muted);display:grid;place-items:center;cursor:pointer;transition:.2s}
+  .modal__x svg{width:16px;height:16px}
+  .modal__x:hover{color:#fff;border-color:var(--cyan)}
+  .modal__head{margin-bottom:1.5rem}
+  .modal__head h3{font-size:1.5rem;margin:.4rem 0 .8rem}
+  .modal__price{display:inline-block;font-family:"JetBrains Mono",monospace;font-size:1.05rem;font-weight:700;color:#04121f;background:linear-gradient(135deg,var(--cyan),var(--blue));padding:.4rem 1rem;border-radius:10px}
+  .modal .row2{display:grid;grid-template-columns:1fr 1fr;gap:1rem}
+  .modal .btn{width:100%;justify-content:center;margin-top:.4rem}
+  .modal__note{display:flex;align-items:flex-start;gap:.6rem;margin-top:1rem;color:var(--muted);font-size:.82rem;font-weight:300;line-height:1.7}
+  .modal__note svg{width:18px;height:18px;color:var(--green);flex:none;margin-top:2px}
+  @media (max-width:600px){.modal .row2{grid-template-columns:1fr}}
+
+  footer{background:linear-gradient(180deg,rgba(6,10,18,.96),#04070d);border-top:1px solid var(--panel-line);padding:clamp(3rem,6vh,4.5rem) var(--pad) 2rem}
+  .fgrid{max-width:var(--maxw);margin:0 auto;display:grid;grid-template-columns:1.6fr 1fr 1fr 1fr;gap:2.5rem}
+  .fbrand .brand{margin-bottom:1rem}
+  .fbrand p{color:var(--muted);font-weight:300;font-size:.9rem;max-width:30ch;margin-bottom:1.2rem}
+  .fsocial{display:flex;gap:.7rem}
+  .fsocial a{width:38px;height:38px;border-radius:10px;border:1px solid var(--panel-line);display:grid;place-items:center;color:var(--muted);transition:.25s}
+  .fsocial a:hover{color:var(--cyan);border-color:rgba(54,214,255,.4);transform:translateY(-2px)}
+  .fsocial svg{width:18px;height:18px}
+  .fcol h5{font-size:.95rem;margin-bottom:1.1rem;color:var(--ink)}
+  .fcol a{display:block;color:var(--muted);font-size:.88rem;margin-bottom:.7rem;font-weight:300;transition:.2s}
+  .fcol a:hover{color:var(--cyan)}
+  .fbottom{max-width:var(--maxw);margin:2.5rem auto 0;padding-top:1.6rem;border-top:1px solid var(--panel-line);display:flex;justify-content:space-between;align-items:center;gap:1rem;flex-wrap:wrap;color:var(--muted2);font-size:.82rem}
+  .fbottom .cm{display:flex;gap:1rem;flex-wrap:wrap}
+  .fbottom .cm span{display:flex;align-items:center;gap:.4rem}
+  .fbottom .cm svg{width:14px;height:14px;color:var(--green)}
+
+  .reveal{opacity:0;transform:translateY(28px);transition:opacity .8s cubic-bezier(.22,.61,.36,1), transform .8s cubic-bezier(.22,.61,.36,1)}
+  .reveal.in{opacity:1;transform:none}
+  .reveal.d1{transition-delay:.1s}.reveal.d2{transition-delay:.2s}.reveal.d3{transition-delay:.3s}.reveal.d4{transition-delay:.4s}
+  @keyframes pulse{0%,100%{opacity:1}50%{opacity:.35}}
+
+  @media (max-width:1000px){
+    .arch{grid-template-columns:1fr}
+    .guarantees{grid-template-columns:repeat(2,1fr)}
+    .contact{grid-template-columns:1fr;gap:2rem}
+    .fgrid{grid-template-columns:1fr 1fr;gap:2rem}
+  }
+  @media (max-width:780px){
+    .nav__links{display:none}
+    .nav__actions .btn--ghost{display:none}
+    .nav__burger{display:flex}
+    .g3,.prices,.quotes,.stats{grid-template-columns:1fr}
+    .stats{gap:2.2rem}
+    .infra-hl{grid-template-columns:1fr}
+    .form .row{grid-template-columns:1fr}
+    .hud{display:none}
+    .fgrid{grid-template-columns:1fr;gap:1.8rem}
+    #bg-net{display:none}
+  }
+  @media (prefers-reduced-motion:reduce){
+    *{animation:none!important;transition:none!important}
+    .reveal{opacity:1;transform:none}
+    #bg-net,.hero__video,#cursor-glow{display:none}
+  }
+</style>
+</head>
+<body>
+
+<canvas id="bg-net"></canvas>
+<div id="cursor-glow"></div>
+
+<div class="topbar">
+  <span><svg class="tb-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l8 4v6c0 5-3.5 8-8 10-4.5-2-8-5-8-10V6z"/></svg> <b>حِصن</b> حاصلة الآن على شهادة <b>ISO/IEC 27001</b> — أمانٌ موثّق على مستوى المؤسسات.</span>
+  <button class="x" aria-label="إغلاق" onclick="this.parentElement.remove()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+</div>
+
+<header class="nav" id="nav">
+  <div class="nav__in">
+    <a class="brand" href="#">
+      <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="g" x1="0" y1="0" x2="48" y2="48"><stop stop-color="#36d6ff"/><stop offset="1" stop-color="#5b8cff"/></linearGradient></defs><path d="M24 3 L42 10 V24 C42 35 34 42 24 45 C14 42 6 35 6 24 V10 Z" stroke="url(#g)" stroke-width="2.5" fill="rgba(54,214,255,0.08)"/><rect x="18" y="22" width="12" height="11" rx="2" stroke="url(#g)" stroke-width="2.2"/><path d="M20.5 22 V18.5 A3.5 3.5 0 0 1 27.5 18.5 V22" stroke="url(#g)" stroke-width="2.2"/><circle cx="24" cy="27" r="1.6" fill="#36d6ff"/></svg>
+      <span>حِصن<small>HISN · SECURE</small></span>
+    </a>
+    <nav><ul class="nav__links">
+      <li><a href="#features">المزايا</a></li>
+      <li><a href="#architecture">البنية التحتية</a></li>
+      <li><a href="#security">الأمان</a></li>
+      <li><a href="#pricing">الأسعار</a></li>
+      <li><a href="#contact">تواصل</a></li>
+    </ul></nav>
+    <div class="nav__actions">
+      <a class="btn btn--ghost" href="#pricing">الأسعار</a>
+      <a class="btn btn--primary" href="#contact">احجز عرضاً</a>
+      <button class="nav__burger" id="burger" aria-label="القائمة"><span></span><span></span><span></span></button>
+    </div>
+  </div>
+</header>
+
+<div class="mobile" id="mobile">
+  <a href="#features">المزايا</a>
+  <a href="#architecture">البنية التحتية</a>
+  <a href="#security">الأمان</a>
+  <a href="#pricing">الأسعار</a>
+  <a href="#contact">تواصل</a>
+  <a class="btn btn--primary" href="#contact">احجز عرضاً توضيحياً</a>
+</div>
+
+<section class="hero">
+  <div class="hero__stage" id="heroStage">
+    <video class="hero__video" autoplay muted loop playsinline preload="auto"
+      poster="https://hyperagent.com/api/files/usergenerated/threads/cmquu35050e7k07adeew9e1jn/images/beb7cd14-6c8f-4543-8c19-03dc2d72cc7a.png">
+      <source src="https://hyperagent.com/api/files/usergenerated/threads/cmquu35050e7k07adeew9e1jn/media/bc46c3fc-c495-4991-bb96-70fa81d7bc62.mp4" type="video/mp4">
+    </video>
+  </div>
+  <div class="hero__overlay"></div>
+  <div class="hero__scan"></div>
+
+  <div class="hero__inner" id="heroContent">
+    <span class="eyebrow mono" data-scramble="SYSTEM ACCESS // DECRYPTED"><span class="dot"></span><span class="scramble-target">SYSTEM ACCESS // DECRYPTED</span></span>
+    <h1>الأمان يبدأ من <span class="accent">داخل النظام</span></h1>
+    <p class="lede">منصّة <b>حِصن</b> تُشفّر بياناتك وتحميها لحظة بلحظة في عمق بنيتك التقنية — تشفير على مستوى المؤسسات، إدارة مفاتيح ذكية، وإقامة بيانات محلية، دون أي أثر على الأداء.</p>
+    <div class="actions">
+      <a class="btn btn--primary btn--lg" href="#contact">احجز عرضاً توضيحياً</a>
+      <a class="btn btn--ghost btn--lg" href="#architecture"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l9 5-9 5-9-5 9-5z"/><path d="M3 12l9 5 9-5"/><path d="M3 17l9 5 9-5"/></svg> استكشف البنية التحتية</a>
+    </div>
+    <div class="hero__trust">
+      <div class="it"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6L9 17l-5-5"/></svg> تشفير AES‑256 من الطرف للطرف</div>
+      <div class="it"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6L9 17l-5-5"/></svg> جاهزية 99.99% مضمونة</div>
+      <div class="it"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6L9 17l-5-5"/></svg> إقامة بياناتك في منطقتك</div>
+    </div>
+  </div>
+
+  <div class="hud hud--l mono">ENC://AES-256 · TLS 1.3 · LIVE</div>
+  <div class="hud hud--r mono"><span class="dot"></span> ENCRYPTION ACTIVE</div>
+</section>
+
+<section class="sec sec--solid" style="padding-block:clamp(2.5rem,5vh,3.5rem)">
+  <p class="trust-cap">موثوقة من فرقٍ تقنية رائدة في المنطقة</p>
+  <div class="logos">
+    <span class="lg"><span class="d"></span>نسيج</span>
+    <span class="lg"><span class="d"></span>سحابة</span>
+    <span class="lg"><span class="d"></span>بياناتك</span>
+    <span class="lg"><span class="d"></span>تِك بلازا</span>
+    <span class="lg"><span class="d"></span>أمان+</span>
+    <span class="lg"><span class="d"></span>منصّة</span>
+  </div>
+</section>
+
+<section class="sec sec--tint" id="features">
+  <div class="khead center reveal">
+    <span class="k">// CORE CAPABILITIES</span>
+    <h2>كل ما تحتاجه لحماية بياناتك في مكانٍ واحد</h2>
+    <p>منظومة متكاملة صُمّمت لتمنحك تحكّماً كاملاً وأماناً لا يتوقّف، من أول سطر بيانات حتى آخره.</p>
+  </div>
+  <div class="grid g3">
+    <div class="card reveal d1"><div class="card__ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg></div><h3>تشفير لحظي</h3><p>تشفير وفكّ تشفير البيانات أثناء حركتها وفي سكونها بمعيار AES‑256 وTLS 1.3، دون أي تأثير ملموس على الأداء.</p></div>
+    <div class="card reveal d2"><div class="card__ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l8 4v6c0 5-3.5 8-8 10-4.5-2-8-5-8-10V6z"/></svg></div><h3>مراقبة مستمرة 24/7</h3><p>رصد ذكي للأنشطة المشبوهة داخل أنظمتك مع تنبيهات فورية واستجابة آلية على مدار الساعة.</p></div>
+    <div class="card reveal d3"><div class="card__ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M12 2v4M12 18v4M2 12h4M18 12h4"/></svg></div><h3>إدارة مفاتيح KMS</h3><p>توليد وتدوير وحفظ مفاتيح التشفير آلياً عبر وحدات أمان مادية (HSM)، مع سجلّ تدقيق كامل.</p></div>
+    <div class="card reveal d1"><div class="card__ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 00-4-4H6a4 4 0 00-4 4v2M9 7a4 4 0 108 0 4 4 0 00-8 0z"/></svg></div><h3>صلاحيات دقيقة (RBAC)</h3><p>تحكّم كامل بالوصول حسب الدور والفريق، مع دعم الدخول الموحّد SSO وSAML للمؤسسات.</p></div>
+    <div class="card reveal d2"><div class="card__ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16v12H4z"/><path d="M4 20h16"/></svg></div><h3>تكامل سلس</h3><p>واجهات برمجية (APIs) وحُزم تطوير (SDKs) جاهزة تتكامل مع بنيتك الحالية خلال دقائق، بلا إعادة بناء.</p></div>
+    <div class="card reveal d3"><div class="card__ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg></div><h3>تقارير وامتثال</h3><p>تقارير امتثال جاهزة لمعايير ISO 27001 وGDPR وPCI‑DSS، تختصر أسابيع من العمل اليدوي.</p></div>
+  </div>
+</section>
+
+<section class="sec sec--solid" id="architecture">
+  <div class="khead reveal">
+    <span class="k">// INFRASTRUCTURE</span>
+    <h2>بنية تحتية مُصمّمة للأمان من الأساس</h2>
+    <p>طبقات حماية متعدّدة تعمل معاً لتأمين بياناتك في كل مرحلة — من التطبيق حتى التخزين — مع حرية اختيار طريقة النشر المناسبة لمؤسستك.</p>
+  </div>
+  <div class="arch">
+    <div class="stack reveal">
+      <div class="layer"><span class="ln">01</span><div><div class="lt">طبقة التطبيق</div><div class="ld">واجهات API وSDK مع مصادقة قوية</div></div></div>
+      <div class="layer"><span class="ln">02</span><div><div class="lt">طبقة التشفير</div><div class="ld">AES‑256 أثناء التخزين · TLS 1.3 أثناء النقل</div></div></div>
+      <div class="layer layer__core"><span class="ln">03</span><div><div class="lt">إدارة المفاتيح (HSM/KMS)</div><div class="ld">تدوير آلي للمفاتيح وعزل تام للأسرار</div></div></div>
+      <div class="layer"><span class="ln">04</span><div><div class="lt">التخزين الآمن</div><div class="ld">مشفّر بالكامل + نسخ احتياطي عبر مناطق متعددة</div></div></div>
+    </div>
+    <div class="deploy reveal d2">
+      <div class="dcard"><h4><span class="di"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17.5 19a4.5 4.5 0 00.5-8.97A6 6 0 006 9.5 4.5 4.5 0 006.5 19z"/></svg></span> نشر سحابي <span class="tag">CLOUD</span></h4><p>انطلق خلال دقائق على بنيتنا السحابية المُدارة بالكامل، بتوسّع تلقائي حسب الحِمل.</p></div>
+      <div class="dcard"><h4><span class="di"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="7" rx="1.5"/><rect x="3" y="13" width="18" height="7" rx="1.5"/><line x1="7" y1="7.5" x2="7.01" y2="7.5"/><line x1="7" y1="16.5" x2="7.01" y2="16.5"/></svg></span> نشر داخلي <span class="tag">ON‑PREM</span></h4><p>شغّل حِصن داخل مراكز بياناتك الخاصة لتحكّمٍ وسيادةٍ كاملة على البيانات.</p></div>
+      <div class="dcard"><h4><span class="di"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 3 21 3 21 8"/><line x1="4" y1="20" x2="21" y2="3"/><polyline points="21 16 21 21 16 21"/><line x1="15" y1="15" x2="21" y2="21"/><line x1="4" y1="4" x2="9" y2="9"/></svg></span> نشر هجين <span class="tag">HYBRID</span></h4><p>اجمع بين مرونة السحابة وأمان البنية الداخلية في منظومة واحدة متناغمة.</p></div>
+      <div class="infra-hl">
+        <div class="h"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6L9 17l-5-5"/></svg> إقامة بيانات محلية</div>
+        <div class="h"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6L9 17l-5-5"/></svg> توسّع تلقائي</div>
+        <div class="h"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6L9 17l-5-5"/></svg> توافر متعدّد المناطق</div>
+        <div class="h"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6L9 17l-5-5"/></svg> زمن استجابة &lt;10ms</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="sec sec--tint" id="security">
+  <div class="khead center reveal">
+    <span class="k">// SECURITY & COMPLIANCE</span>
+    <h2>معاييرٌ عالمية تثق بها أكبر المؤسسات</h2>
+    <p>نلتزم بأعلى معايير الأمان والامتثال العالمية، ونثبت ذلك بتدقيقٍ مستقلٍّ دوري.</p>
+  </div>
+  <div class="badges reveal">
+    <div class="badge"><span class="ck"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M20 6L9 17l-5-5"/></svg></span><span>ISO/IEC 27001<small>إدارة أمن المعلومات</small></span></div>
+    <div class="badge"><span class="ck"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M20 6L9 17l-5-5"/></svg></span><span>SOC 2 Type II<small>ضوابط مدقّقة</small></span></div>
+    <div class="badge"><span class="ck"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M20 6L9 17l-5-5"/></svg></span><span>GDPR<small>حماية الخصوصية</small></span></div>
+    <div class="badge"><span class="ck"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M20 6L9 17l-5-5"/></svg></span><span>PCI‑DSS<small>أمان المدفوعات</small></span></div>
+  </div>
+  <div class="guarantees">
+    <div class="grow reveal d1"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l8 4v6c0 5-3.5 8-8 10-4.5-2-8-5-8-10V6z"/><path d="M9 12l2 2 4-4"/></svg><h4>تشفير من الطرف للطرف</h4><p>بياناتك مشفّرة دائماً، حتى نحن لا نستطيع قراءتها.</p></div>
+    <div class="grow reveal d2"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg><h4>اتفاقية خدمة 99.99%</h4><p>جاهزية مضمونة تعاقدياً مع تعويضٍ عند الإخلال.</p></div>
+    <div class="grow reveal d3"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg><h4>تدقيق أمني دوري</h4><p>اختبارات اختراق ومراجعات مستقلّة كل ربع سنة.</p></div>
+    <div class="grow reveal d4"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15 15 0 010 20M12 2a15 15 0 000 20"/></svg><h4>سيادة البيانات</h4><p>اختر منطقة تخزين بياناتك وتحكّم بها بالكامل.</p></div>
+  </div>
+</section>
+
+<section class="sec impact">
+  <div class="stats">
+    <div class="stat reveal d1"><div class="n" data-count="99.99" data-dec="2" data-suffix="%">0%</div><div class="l">جاهزية تشغيلية مضمونة</div></div>
+    <div class="stat reveal d2"><div class="n" data-count="4.2" data-dec="1" data-suffix="B+">0</div><div class="l">عملية تشفير شهرياً</div></div>
+    <div class="stat reveal d3"><div class="n" data-count="500" data-suffix="+">0</div><div class="l">مؤسسة تثق بحِصن</div></div>
+    <div class="stat reveal d4"><div class="n" data-static data-suffix="">0</div><div class="l">حوادث تسريب بيانات</div></div>
+  </div>
+</section>
+
+<section class="sec sec--solid" id="pricing">
+  <div class="khead center reveal">
+    <span class="k">// PRICING</span>
+    <h2>أسعارٌ واضحة تنمو مع مؤسستك</h2>
+    <p>ابدأ صغيراً وتوسّع وقتما تشاء. كل الباقات تشمل التشفير الأساسي ودعماً حقيقياً — بلا رسوم خفية.</p>
+  </div>
+  <div class="toggle reveal">
+    <span>شهري</span>
+    <div class="sw" id="billSw" role="switch" aria-label="تبديل الفوترة"></div>
+    <span><b>سنوي</b></span>
+    <span class="save">وفّر 20%</span>
+  </div>
+  <p class="pay-note reveal"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg> طلبات الاشتراك تصل فريقنا فوراً عبر البريد، ونرسل لك تفاصيل الدفع الآمن خلال 24 ساعة.</p>
+  <div class="prices">
+    <div class="price reveal d1">
+      <div class="pn">المبتدئ</div>
+      <div class="pd">للمشاريع الناشئة والفرق الصغيرة التي تبدأ رحلة الأمان.</div>
+      <div class="amt"><span class="cur">$</span><span class="num" data-m="12" data-y="9">12</span><span class="per">/ شهرياً</span></div>
+      <div class="note" data-note>يُدفع شهرياً</div>
+      <ul>
+        <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6L9 17l-5-5"/></svg> حتى 10 مستخدمين</li>
+        <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6L9 17l-5-5"/></svg> تشفير AES‑256</li>
+        <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6L9 17l-5-5"/></svg> حتى 5 تكاملات</li>
+        <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6L9 17l-5-5"/></svg> تقارير أساسية</li>
+        <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6L9 17l-5-5"/></svg> دعم عبر البريد</li>
+      </ul>
+      <a class="btn btn--ghost js-buy" href="#" data-plan="المبتدئ">ابدأ الآن</a>
+    </div>
+    <div class="price feat reveal d2">
+      <div class="pop">الأكثر شيوعاً</div>
+      <div class="pn">الاحترافي</div>
+      <div class="pd">للفرق والشركات النامية التي تحتاج تحكّماً وأماناً أعمق.</div>
+      <div class="amt"><span class="cur">$</span><span class="num" data-m="39" data-y="31">39</span><span class="per">/ شهرياً</span></div>
+      <div class="note" data-note>يُدفع شهرياً</div>
+      <ul>
+        <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6L9 17l-5-5"/></svg> حتى 50 مستخدماً</li>
+        <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6L9 17l-5-5"/></svg> كل مزايا المبتدئ +</li>
+        <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6L9 17l-5-5"/></svg> إدارة مفاتيح KMS وRBAC</li>
+        <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6L9 17l-5-5"/></svg> تكاملات غير محدودة</li>
+        <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6L9 17l-5-5"/></svg> مراقبة 24/7 ودعم أولوية</li>
+      </ul>
+      <a class="btn btn--primary js-buy" href="#" data-plan="الاحترافي">ابدأ التجربة المجانية</a>
+    </div>
+    <div class="price reveal d3">
+      <div class="pn">المؤسسات</div>
+      <div class="pd">حلولٌ مُفصّلة للمؤسسات الكبرى ذات المتطلبات الأمنية العالية.</div>
+      <div class="amt"><span class="num" style="font-size:2rem">حسب الطلب</span></div>
+      <div class="note" data-note>تسعير مُخصّص لاحتياجك</div>
+      <ul>
+        <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6L9 17l-5-5"/></svg> مستخدمون بلا حدود</li>
+        <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6L9 17l-5-5"/></svg> نشر داخلي / هجين (On‑Prem)</li>
+        <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6L9 17l-5-5"/></svg> SSO / SAML واتفاقية SLA مخصّصة</li>
+        <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6L9 17l-5-5"/></svg> مدير حساب مخصّص</li>
+        <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6L9 17l-5-5"/></svg> تدقيق أمني وإقامة بيانات محلية</li>
+      </ul>
+      <a class="btn btn--ghost js-buy" href="#" data-plan="المؤسسات" data-enterprise="1">تواصل مع المبيعات</a>
+    </div>
+  </div>
+</section>
+
+<section class="sec sec--tint" id="testimonials">
+  <div class="khead center reveal">
+    <span class="k">// CUSTOMERS</span>
+    <h2>نتائجٌ يلمسها قادة التقنية</h2>
+  </div>
+  <div class="quotes">
+    <div class="quote reveal d1"><div class="mark">”</div><div class="metric">‑70%</div><p>قلّصنا زمن الاستجابة للحوادث الأمنية بنسبة 70% خلال الشهر الأول من اعتماد حِصن. تحوّلٌ حقيقي في طريقة عملنا.</p><div class="who"><div class="av">س</div><div><b>سارة الحاج</b><span>مديرة أمن المعلومات · مجموعة نسيج</span></div></div></div>
+    <div class="quote reveal d2"><div class="mark">”</div><div class="metric">0ms</div><p>أخيراً تشفير على مستوى المؤسسات دون أي أثرٍ ملموس على الأداء. التكامل تمّ خلال يومٍ واحد فقط.</p><div class="who"><div class="av">ر</div><div><b>رامي خوري</b><span>الرئيس التقني · سحابة بلاد الشام</span></div></div></div>
+    <div class="quote reveal d3"><div class="mark">”</div><div class="metric">ISO <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" style="width:.8em;height:.8em;vertical-align:-1px"><path d="M20 6L9 17l-5-5"/></svg></div><p>التزمنا بمتطلبات الامتثال خلال أسابيع بدل أشهر. تقارير حِصن الجاهزة وفّرت علينا جهداً هائلاً.</p><div class="who"><div class="av">ل</div><div><b>ليان عبدالله</b><span>مديرة العمليات · داتا بلس</span></div></div></div>
+  </div>
+</section>
+
+<section class="sec sec--solid" id="faq">
+  <div class="khead center reveal">
+    <span class="k">// FAQ</span>
+    <h2>أسئلة يطرحها صنّاع القرار</h2>
+  </div>
+  <div class="faq reveal">
+    <div class="qa"><button class="qa__q">كيف تضمنون أمان بياناتنا فعلياً؟ <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg></button><div class="qa__a"><div>تُشفّر بياناتك من الطرف للطرف بمعيار AES‑256 أثناء التخزين وTLS 1.3 أثناء النقل، وتُدار المفاتيح عبر وحدات أمان مادية (HSM) معزولة. حتى فريق حِصن لا يمكنه الوصول إلى محتوى بياناتك.</div></div></div>
+    <div class="qa"><button class="qa__q">أين تُخزَّن بياناتنا؟ وهل أتحكّم بذلك؟ <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg></button><div class="qa__a"><div>نعم. تختار منطقة تخزين بياناتك بنفسك (إقامة بيانات محلية)، ويمكنك النشر الداخلي On‑Premise داخل مراكز بياناتك لسيادةٍ كاملة على بياناتك.</div></div></div>
+    <div class="qa"><button class="qa__q">كم يستغرق التكامل والإطلاق؟ <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg></button><div class="qa__a"><div>معظم الفرق تنطلق خلال أيام. نوفّر واجهات API وحُزم SDK جاهزة وتوثيقاً شاملاً، إضافةً إلى دعمٍ فني يرافقك في كل خطوة.</div></div></div>
+    <div class="qa"><button class="qa__q">هل تدعمون النشر الداخلي (On‑Premise)؟ <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg></button><div class="qa__a"><div>نعم، ضمن باقة المؤسسات. يمكنك تشغيل حِصن بالكامل داخل بنيتك الخاصة، أو اعتماد نموذجٍ هجين يجمع بين السحابة والبنية الداخلية.</div></div></div>
+    <div class="qa"><button class="qa__q">ما مستوى الدعم واتفاقية الخدمة (SLA)؟ <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg></button><div class="qa__a"><div>نلتزم بجاهزية 99.99% مضمونة تعاقدياً. باقات المؤسسات تشمل اتفاقية SLA مخصّصة، ومدير حساب، ودعماً ذا أولوية على مدار الساعة.</div></div></div>
+    <div class="qa"><button class="qa__q">هل تتوفّر نسخة تجريبية مجانية؟ <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg></button><div class="qa__a"><div>بالتأكيد. تستطيع تجربة الباقة الاحترافية مجاناً، أو حجز عرضٍ توضيحي مع فريقنا ليصمّم لك المسار الأنسب لمؤسستك.</div></div></div>
+  </div>
+</section>
+
+<section class="ctaband">
+  <h2 class="reveal">جاهزٌ لتحصين بنيتك التحتية؟</h2>
+  <p class="reveal d1">احجز عرضاً توضيحياً مجانياً مع فريق حِصن، وشاهد كيف تحمي بياناتك خلال 30 دقيقة فقط.</p>
+  <div class="actions reveal d2">
+    <a class="btn btn--primary btn--lg" href="#contact">احجز عرضاً توضيحياً</a>
+    <a class="btn btn--ghost btn--lg" href="#pricing">اطّلع على الأسعار</a>
+  </div>
+</section>
+
+<section class="sec sec--solid" id="contact">
+  <div class="contact">
+    <div class="cinfo reveal">
+      <span class="k">// CONTACT</span>
+      <h3>تواصل معنا</h3>
+      <p>سواءً كان لديك سؤال أو ترغب بعرضٍ توضيحي مخصّص — فريقنا جاهز للرد خلال أقل من 24 ساعة.</p>
+      <div class="cmail">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 7l9 6 9-6"/></svg>
+        <div><small>راسلنا مباشرة</small><a class="em" href="mailto:tt123456rayan@gmail.com">tt123456rayan@gmail.com</a></div>
+        <button class="copy" id="copyBtn">نسخ</button>
+      </div>
+      <div class="cextra">
+        <div class="r"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6L9 17l-5-5"/></svg> رد خلال 24 ساعة عمل</div>
+        <div class="r"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6L9 17l-5-5"/></svg> استشارة أمنية أولية مجانية</div>
+        <div class="r"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6L9 17l-5-5"/></svg> دعم بالعربية والإنجليزية</div>
+      </div>
+    </div>
+    <form class="form reveal d1" id="cform">
+      <div class="row">
+        <div class="field"><label>الاسم الكامل</label><input type="text" name="name" placeholder="اسمك" required></div>
+        <div class="field"><label>اسم الشركة</label><input type="text" name="company" placeholder="مؤسستك"></div>
+      </div>
+      <div class="field"><label>البريد الإلكتروني</label><input type="email" name="email" placeholder="you@company.com" required></div>
+      <div class="field"><label>رسالتك</label><textarea name="msg" placeholder="أخبرنا كيف يمكننا مساعدتك..." required></textarea></div>
+      <button type="submit" class="btn btn--primary">إرسال الرسالة</button>
+      <div class="fnote">بالضغط على إرسال سيتم فتح بريدك لإرسال الرسالة إلى فريق حِصن.</div>
+    </form>
+  </div>
+</section>
+
+<footer>
+  <div class="fgrid">
+    <div class="fbrand">
+      <a class="brand" href="#">
+        <svg viewBox="0 0 48 48" fill="none"><defs><linearGradient id="g2" x1="0" y1="0" x2="48" y2="48"><stop stop-color="#36d6ff"/><stop offset="1" stop-color="#5b8cff"/></linearGradient></defs><path d="M24 3 L42 10 V24 C42 35 34 42 24 45 C14 42 6 35 6 24 V10 Z" stroke="url(#g2)" stroke-width="2.5" fill="rgba(54,214,255,0.08)"/><rect x="18" y="22" width="12" height="11" rx="2" stroke="url(#g2)" stroke-width="2.2"/><path d="M20.5 22 V18.5 A3.5 3.5 0 0 1 27.5 18.5 V22" stroke="url(#g2)" stroke-width="2.2"/></svg>
+        <span>حِصن<small>HISN · SECURE</small></span>
+      </a>
+      <p>البنية التحتية الآمنة لبياناتك. نحمي ما يهمّك، من داخل النظام.</p>
+      <div class="fsocial">
+        <a href="#" aria-label="X"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M18 2h3l-7 8 8 12h-6l-5-7-5 7H-1l8-9L0 2h6l4 6z" transform="translate(2 0)"/></svg></a>
+        <a href="#" aria-label="LinkedIn"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M4 4a2 2 0 100 4 2 2 0 000-4zM3 9h2v12H3zM9 9h2v2a3 3 0 013-2c2 0 4 2 4 5v7h-2v-6c0-2-1-3-2-3s-3 1-3 3v6H9z"/></svg></a>
+        <a href="#" aria-label="GitHub"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a10 10 0 00-3 19.5c.5 0 .7-.2.7-.5v-2c-2.8.6-3.4-1.2-3.4-1.2-.5-1.2-1.1-1.5-1.1-1.5-.9-.6 0-.6 0-.6 1 .1 1.5 1 1.5 1 .9 1.5 2.3 1 2.9.8.1-.7.4-1 .6-1.3-2.2-.2-4.6-1.1-4.6-5 0-1.1.4-2 1-2.7 0-.3-.4-1.3.1-2.6 0 0 .8-.3 2.7 1a9 9 0 014.8 0c1.9-1.3 2.7-1 2.7-1 .5 1.3.1 2.3.1 2.6.6.7 1 1.6 1 2.7 0 3.9-2.4 4.8-4.6 5 .4.3.7.9.7 1.8v2.6c0 .3.2.6.7.5A10 10 0 0012 2z"/></svg></a>
+      </div>
+    </div>
+    <div class="fcol"><h5>المنتج</h5><a href="#features">المزايا</a><a href="#architecture">البنية التحتية</a><a href="#security">الأمان والامتثال</a><a href="#pricing">الأسعار</a></div>
+    <div class="fcol"><h5>الشركة</h5><a href="#">من نحن</a><a href="#">المدوّنة</a><a href="#">الوظائف</a><a href="#contact">تواصل معنا</a></div>
+    <div class="fcol"><h5>الموارد</h5><a href="#">التوثيق</a><a href="#">مرجع API</a><a href="#">حالة النظام</a><a href="#">مركز الدعم</a></div>
+  </div>
+  <div class="fbottom">
+    <span>© 2026 حِصن (HISN). جميع الحقوق محفوظة.</span>
+    <div class="cm">
+      <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M20 6L9 17l-5-5"/></svg> ISO 27001</span>
+      <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M20 6L9 17l-5-5"/></svg> SOC 2</span>
+      <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M20 6L9 17l-5-5"/></svg> GDPR</span>
+    </div>
+  </div>
+</footer>
+
+<div class="modal" id="payModal" aria-hidden="true">
+  <div class="modal__card">
+    <button class="modal__x" data-close-pay aria-label="إغلاق"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+    <div class="modal__head">
+      <span class="k">// CHECKOUT</span>
+      <h3 id="pmPlan">باقة الاحترافي</h3>
+      <div class="modal__price" id="pmPrice">$39 / شهرياً</div>
+    </div>
+    <form id="pmForm">
+      <div class="row2">
+        <div class="field"><label>الاسم الكامل</label><input name="pname" required placeholder="اسمك"></div>
+        <div class="field"><label>البريد الإلكتروني</label><input type="email" name="pemail" required placeholder="you@company.com"></div>
+      </div>
+      <div class="row2">
+        <div class="field"><label>اسم الشركة</label><input name="pcompany" placeholder="مؤسستك"></div>
+        <div class="field"><label>رقم الجوال</label><input name="pphone" placeholder="+962 ..."></div>
+      </div>
+      <div class="field"><label>عدد المستخدمين (اختياري)</label><input name="pusers" placeholder="مثال: 25"></div>
+      <div class="field"><label>ملاحظات (اختياري)</label><textarea name="pnotes" placeholder="أي تفاصيل إضافية..."></textarea></div>
+      <button type="submit" class="btn btn--primary"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 7l9 6 9-6"/></svg> متابعة الطلب عبر البريد</button>
+      <div class="modal__note"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg> سيُفتح بريدك لإرسال الطلب إلى فريق حِصن على <b style="color:var(--cyan);direction:ltr">tt123456rayan@gmail.com</b>، وسنزوّدك بتفاصيل الدفع الآمن.</div>
+    </form>
+  </div>
+</div>
+
+<script>
+(function(){
+  "use strict";
+  var reduce=window.matchMedia('(prefers-reduced-motion:reduce)').matches;
+  var isDesktop=window.matchMedia('(min-width:781px) and (pointer:fine)').matches;
+
+  var v=document.querySelector('.hero__video');
+  if(v){var p=v.play();if(p&&p.catch)p.catch(function(){});document.addEventListener('click',function(){v.play&&v.play().catch(function(){});},{once:true});}
+
+  var nav=document.getElementById('nav');
+  var onScroll=function(){nav.classList.toggle('scrolled',window.scrollY>20);};onScroll();
+  window.addEventListener('scroll',onScroll,{passive:true});
+
+  var burger=document.getElementById('burger'),mobile=document.getElementById('mobile');
+  burger.addEventListener('click',function(){mobile.classList.toggle('open');});
+  mobile.querySelectorAll('a').forEach(function(a){a.addEventListener('click',function(){mobile.classList.remove('open');});});
+
+  var io=new IntersectionObserver(function(es){es.forEach(function(e){if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target);}});},{threshold:.14});
+  document.querySelectorAll('.reveal').forEach(function(el){io.observe(el);});
+
+  function animCount(el){
+    if(el.dataset.static!==undefined){el.textContent='0'+(el.dataset.suffix||'');return;}
+    var target=parseFloat(el.dataset.count),dec=parseInt(el.dataset.dec||'0'),suf=el.dataset.suffix||'',t0=null,dur=1600;
+    function step(ts){if(!t0)t0=ts;var k=Math.min((ts-t0)/dur,1),e=1-Math.pow(1-k,3);el.textContent=(target*e).toFixed(dec)+suf;if(k<1)requestAnimationFrame(step);}
+    requestAnimationFrame(step);
+  }
+  var cio=new IntersectionObserver(function(es){es.forEach(function(e){if(e.isIntersecting){animCount(e.target);cio.unobserve(e.target);}});},{threshold:.5});
+  document.querySelectorAll('.n[data-count],.n[data-static]').forEach(function(el){cio.observe(el);});
+
+  var sw=document.getElementById('billSw');
+  sw.addEventListener('click',function(){
+    var on=sw.classList.toggle('on');
+    document.querySelectorAll('.price .num[data-m]').forEach(function(n){n.textContent=on?n.dataset.y:n.dataset.m;});
+    document.querySelectorAll('.price [data-note]').forEach(function(nt){nt.textContent=on?'يُدفع سنوياً · وفّر 20%':'يُدفع شهرياً';});
+  });
+
+  document.querySelectorAll('.qa__q').forEach(function(b){
+    b.addEventListener('click',function(){
+      var qa=b.parentElement,a=qa.querySelector('.qa__a'),open=qa.classList.contains('open');
+      document.querySelectorAll('.qa').forEach(function(x){x.classList.remove('open');x.querySelector('.qa__a').style.maxHeight=null;});
+      if(!open){qa.classList.add('open');a.style.maxHeight=a.scrollHeight+'px';}
+    });
+  });
+
+  var cb=document.getElementById('copyBtn');
+  cb.addEventListener('click',function(){navigator.clipboard.writeText('tt123456rayan@gmail.com').then(function(){cb.textContent='تم النسخ';setTimeout(function(){cb.textContent='نسخ';},1800);});});
+
+  document.getElementById('cform').addEventListener('submit',function(e){
+    e.preventDefault();var f=e.target;
+    var subj=encodeURIComponent('طلب من '+(f.name.value||'زائر')+(f.company.value?(' - '+f.company.value):''));
+    var body=encodeURIComponent('الاسم: '+f.name.value+'\nالشركة: '+f.company.value+'\nالبريد: '+f.email.value+'\n\n'+f.msg.value);
+    window.location.href='mailto:tt123456rayan@gmail.com?subject='+subj+'&body='+body;
+  });
+
+  /* ===== subscription / payment — linked to Gmail ===== */
+  var modal=document.getElementById('payModal'),pmPlan=document.getElementById('pmPlan'),pmPrice=document.getElementById('pmPrice'),pmForm=document.getElementById('pmForm'),curPlan='';
+  function billOn(){return document.getElementById('billSw').classList.contains('on');}
+  function openPay(btn){
+    curPlan=btn.dataset.plan; pmPlan.textContent='باقة '+curPlan;
+    if(btn.dataset.enterprise){ pmPrice.textContent='تسعير مخصّص — حسب الطلب'; }
+    else{ var card=btn.closest('.price'),num=card.querySelector('.num[data-m]'),on=billOn(),price=on?num.dataset.y:num.dataset.m; pmPrice.textContent='$'+price+' / '+(on?'شهرياً · فوترة سنوية':'شهرياً'); }
+    modal.classList.add('open'); document.body.style.overflow='hidden';
+  }
+  function closePay(){ modal.classList.remove('open'); document.body.style.overflow=''; }
+  document.querySelectorAll('.js-buy').forEach(function(b){ b.addEventListener('click',function(e){ e.preventDefault(); openPay(b); }); });
+  document.querySelectorAll('[data-close-pay]').forEach(function(x){ x.addEventListener('click',closePay); });
+  modal.addEventListener('click',function(e){ if(e.target===modal) closePay(); });
+  document.addEventListener('keydown',function(e){ if(e.key==='Escape') closePay(); });
+  pmForm.addEventListener('submit',function(e){
+    e.preventDefault(); var f=e.target;
+    var subj=encodeURIComponent('طلب اشتراك — باقة '+curPlan+' | حِصن');
+    var body=encodeURIComponent(['طلب اشتراك جديد عبر موقع حِصن','————————————','الباقة: '+curPlan,'السعر: '+pmPrice.textContent,'الاسم: '+f.pname.value,'الشركة: '+(f.pcompany.value||'—'),'البريد: '+f.pemail.value,'الجوال: '+(f.pphone.value||'—'),'عدد المستخدمين: '+(f.pusers.value||'—'),'','ملاحظات: '+(f.pnotes.value||'—')].join('\n'));
+    window.location.href='mailto:tt123456rayan@gmail.com?subject='+subj+'&body='+body;
+  });
+
+  if(!reduce){
+    var host=document.querySelector('.eyebrow');
+    if(host){var tgt=host.querySelector('.scramble-target'),fin=host.getAttribute('data-scramble'),gl='01<>/\\[]{}#$%&*+=ABCDEF0123456789',rv=0;
+      var iv=setInterval(function(){var o='';for(var i=0;i<fin.length;i++){o+=(i<rv||fin[i]===' ')?fin[i]:gl[Math.floor(Math.random()*gl.length)];}tgt.textContent=o;rv+=0.5;if(rv>fin.length){clearInterval(iv);tgt.textContent=fin;}},45);}
+  }
+
+  if(!isDesktop||reduce)return;
+
+  /* ambient cursor glow */
+  var glow=document.getElementById('cursor-glow'),gmx=innerWidth/2,gmy=innerHeight/2,gx=gmx,gy=gmy;
+  addEventListener('mousemove',function(e){gmx=e.clientX;gmy=e.clientY;glow.style.opacity=1;});
+  (function gl(){gx+=(gmx-gx)*.14;gy+=(gmy-gy)*.14;glow.style.transform='translate('+gx+'px,'+gy+'px) translate(-50%,-50%)';requestAnimationFrame(gl);})();
+
+  /* hero parallax */
+  var stage=document.getElementById('heroStage'),content=document.getElementById('heroContent'),hero=document.querySelector('.hero');
+  hero.addEventListener('mousemove',function(e){var r=hero.getBoundingClientRect(),dx=(e.clientX-r.width/2)/r.width,dy=(e.clientY-r.height/2)/r.height;
+    stage.style.transform='translate('+(dx*-30)+'px,'+(dy*-30)+'px) scale(1.08)';content.style.transform='translate('+(dx*18)+'px,'+(dy*12)+'px)';});
+  hero.addEventListener('mouseleave',function(){stage.style.transform='scale(1.08)';content.style.transform='';});
+
+  /* card tilt + spotlight */
+  document.querySelectorAll('.card').forEach(function(c){
+    c.addEventListener('mousemove',function(e){var r=c.getBoundingClientRect(),px=(e.clientX-r.left)/r.width,py=(e.clientY-r.top)/r.height;
+      c.style.transform='perspective(820px) rotateX('+((py-.5)*-7)+'deg) rotateY('+((px-.5)*9)+'deg) translateY(-5px)';
+      c.style.setProperty('--mx',(px*100)+'%');c.style.setProperty('--my',(py*100)+'%');});
+    c.addEventListener('mouseleave',function(){c.style.transform='';});
+  });
+
+  /* ===== interactive constellation ===== */
+  var cv=document.getElementById('bg-net'),ctx=cv.getContext('2d'),W,H,DPR=Math.min(devicePixelRatio||1,2);
+  var pts=[],packets=[],ripples=[],mouse={x:-9999,y:-9999};
+  function resize(){W=cv.width=innerWidth*DPR;H=cv.height=innerHeight*DPR;cv.style.width=innerWidth+'px';cv.style.height=innerHeight+'px';
+    var n=Math.min(120,Math.floor(innerWidth/13));pts=[];for(var i=0;i<n;i++){pts.push({x:Math.random()*W,y:Math.random()*H,vx:(Math.random()-.5)*.25*DPR,vy:(Math.random()-.5)*.25*DPR,e:0});}}
+  resize();addEventListener('resize',resize);
+  addEventListener('mousemove',function(e){mouse.x=e.clientX*DPR;mouse.y=e.clientY*DPR;});
+  addEventListener('mouseout',function(){mouse.x=-9999;mouse.y=-9999;});
+  addEventListener('click',function(e){ripples.push({x:e.clientX*DPR,y:e.clientY*DPR,r:0,max:280*DPR});});
+  var LINK=140*DPR,MR=215*DPR;
+  function col(e){return Math.round(91+(54-91)*e)+','+Math.round(140+(214-140)*e)+',255';}
+  function draw(){
+    ctx.clearRect(0,0,W,H);
+    for(var ri=ripples.length-1;ri>=0;ri--){var rp=ripples[ri];rp.r+=6*DPR;
+      ctx.beginPath();ctx.arc(rp.x,rp.y,rp.r,0,6.283);ctx.strokeStyle='rgba(54,214,255,'+(.5*(1-rp.r/rp.max))+')';ctx.lineWidth=2*DPR;ctx.stroke();
+      if(rp.r>=rp.max)ripples.splice(ri,1);}
+    for(var i=0;i<pts.length;i++){var p=pts[i];
+      var ddx=mouse.x-p.x,ddy=mouse.y-p.y,dm=Math.hypot(ddx,ddy)||1;
+      if(dm<MR){var f=1-dm/MR;if(f>p.e)p.e=f;p.vx+=ddx/dm*.02*f;p.vy+=ddy/dm*.02*f;}
+      for(var r2=0;r2<ripples.length;r2++){var rp2=ripples[r2],rdx=p.x-rp2.x,rdy=p.y-rp2.y,rd=Math.hypot(rdx,rdy)||1;if(Math.abs(rd-rp2.r)<28*DPR){p.vx+=rdx/rd*.9;p.vy+=rdy/rd*.9;p.e=1;}}
+      p.e*=.95;p.vx*=.985;p.vy*=.985;
+      var spd=Math.hypot(p.vx,p.vy),mxs=2.6*DPR;if(spd>mxs){p.vx*=mxs/spd;p.vy*=mxs/spd;}
+      p.x+=p.vx;p.y+=p.vy;
+      if(p.x<0){p.x=0;p.vx*=-1;}if(p.x>W){p.x=W;p.vx*=-1;}if(p.y<0){p.y=0;p.vy*=-1;}if(p.y>H){p.y=H;p.vy*=-1;}
+      var rad=(1.5+p.e*3.4)*DPR;
+      if(p.e>.05){ctx.shadowBlur=15*p.e;ctx.shadowColor='rgba(54,214,255,'+p.e+')';}else ctx.shadowBlur=0;
+      ctx.beginPath();ctx.arc(p.x,p.y,rad,0,6.283);ctx.fillStyle='rgba('+col(p.e)+','+(.45+p.e*.55)+')';ctx.fill();ctx.shadowBlur=0;
+      for(var j=i+1;j<pts.length;j++){var q=pts[j],dx=p.x-q.x,dy=p.y-q.y,d=Math.hypot(dx,dy);
+        if(d<LINK){var en=p.e>q.e?p.e:q.e,a=(1-d/LINK)*(.1+en*.55);
+          ctx.beginPath();ctx.moveTo(p.x,p.y);ctx.lineTo(q.x,q.y);ctx.strokeStyle='rgba('+col(en)+','+a+')';ctx.lineWidth=(.6+en*1.3)*DPR;ctx.stroke();
+          if(en>.62&&packets.length<70&&Math.random()<.004)packets.push({a:i,b:j,t:0});}}
+      if(dm<MR){var ac=1-dm/MR;ctx.beginPath();ctx.moveTo(p.x,p.y);ctx.lineTo(mouse.x,mouse.y);ctx.strokeStyle='rgba(54,214,255,'+(ac*.5)+')';ctx.lineWidth=DPR;ctx.stroke();}}
+    for(var pk=packets.length-1;pk>=0;pk--){var z=packets[pk];z.t+=.045;var A=pts[z.a],B=pts[z.b];if(!A||!B||z.t>=1){packets.splice(pk,1);continue;}
+      var xx=A.x+(B.x-A.x)*z.t,yy=A.y+(B.y-A.y)*z.t;ctx.beginPath();ctx.arc(xx,yy,2.2*DPR,0,6.283);ctx.shadowBlur=10;ctx.shadowColor='rgba(67,245,160,.9)';ctx.fillStyle='rgba(67,245,160,.95)';ctx.fill();ctx.shadowBlur=0;}
+    if(mouse.x>-9000){ctx.beginPath();ctx.arc(mouse.x,mouse.y,3.4*DPR,0,6.283);ctx.shadowBlur=18;ctx.shadowColor='rgba(54,214,255,1)';ctx.fillStyle='rgba(190,242,255,.95)';ctx.fill();ctx.shadowBlur=0;
+      var pu=(Date.now()%1500)/1500;ctx.beginPath();ctx.arc(mouse.x,mouse.y,(8+pu*28)*DPR,0,6.283);ctx.strokeStyle='rgba(54,214,255,'+(.4*(1-pu))+')';ctx.lineWidth=1.5*DPR;ctx.stroke();}
+    requestAnimationFrame(draw);
+  }
+  draw();
+})();
+</script>
+</body>
+</html>
