@@ -2674,7 +2674,8 @@
             display: none;
         }
 
-        .dashboard-menu button {
+        .dashboard-menu button,
+        .dashboard-menu a {
             border: 0;
             border-radius: 8px;
             padding: 12px;
@@ -2684,10 +2685,12 @@
             font: inherit;
             font-weight: 800;
             cursor: pointer;
+            text-decoration: none;
         }
 
         .dashboard-menu button:hover,
-        .dashboard-menu button.is-active {
+        .dashboard-menu button.is-active,
+        .dashboard-menu a:hover {
             background: var(--green);
             color: var(--white);
         }
@@ -2975,6 +2978,7 @@
         body.dark-mode .meeting-field select,
         body.dark-mode .meeting-field textarea,
         body.dark-mode .dashboard-menu button,
+        body.dark-mode .dashboard-menu a,
         body.dark-mode .profile-detail,
         body.dark-mode .meeting-meta,
         body.dark-mode .profile-detail-grid > div,
@@ -3955,6 +3959,7 @@
                             <button type="button" data-dashboard-view="profile" data-en="Profile">البروفايل</button>
                             <button type="button" data-dashboard-view="meetings" data-en="Meetings">الاجتماعات</button>
                             <button type="button" data-dashboard-view="attendance" data-en="QR Attendance">الحضور QR</button>
+                            <a href="./member-evolutions/" data-en="Member Evaluation">تقييم الأعضاء</a>
                             <button type="button" data-dashboard-view="announcements" data-en="Announcements">إعلامات</button>
                             <button type="button" data-dashboard-view="committees" data-en="Committees">إدارة اللجان</button>
                             <button type="button" id="dashboard-logout" data-en="Log Out">تسجيل الخروج</button>

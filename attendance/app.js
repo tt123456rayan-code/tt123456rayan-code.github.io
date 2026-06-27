@@ -54,6 +54,14 @@
             .replace(/'/g, "&#039;");
     }
 
+    function readMemberSession() {
+        try {
+            return JSON.parse(sessionStorage.getItem("himma_member_session_v1") || "null");
+        } catch (_) {
+            return null;
+        }
+    }
+
     async function rpc(name, body) {
         if (!config || !config.url || !config.anonKey) {
             throw new Error("missing_config");
@@ -91,9 +99,14 @@
             elements.eventSummary.innerHTML = `
                 <strong>${escapeHtml(event.title)}</strong><br>
                 التاريخ: ${escapeHtml(event.meeting_date)} - الوقت: ${escapeHtml(event.meeting_time)}<br>
-                ${event.is_open ? "التسجيل متاح الآن." : "التسجيل مغلق حاليًا."}
+                ${event.is_open ? "سجّل دخولك الآن لتثبيت حضورك باسمك." : "التسجيل مغلق حاليًا."}
             `;
             elements.checkinForm.hidden = !event.is_open;
+            const memberSession = readMemberSession();
+            const savedMembership = memberSession && (memberSession.membership_number || memberSession.membership_id);
+            if (savedMembership && !elements.checkinMembership.value) {
+                elements.checkinMembership.value = savedMembership;
+            }
         } catch {
             elements.eventSummary.textContent = "تعذر تحميل بيانات الفعالية حاليًا.";
         }
@@ -187,10 +200,11 @@
                 return;
             }
             const message = result.already_registered
-                ? "حضورك مسجل مسبقًا."
+                ? `حضور ${result.member_name || "العضو"} مسجل مسبقًا.`
                 : result.attendance_status === "late"
-                    ? "تم تسجيل حضورك كمتأخر."
-                    : "تم تسجيل حضورك بنجاح.";
+                    ? `تم تسجيل حضور ${result.member_name || "العضو"} كمتأخر.`
+                    : `تم تسجيل حضور ${result.member_name || "العضو"} بنجاح.`;
+            elements.checkinForm.hidden = true;
             setMessage(elements.checkinMessage, message);
         } catch {
             elements.checkinPassword.value = "";

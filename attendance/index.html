@@ -19,7 +19,7 @@
         <section class="intro">
             <p class="eyebrow">نظام حضور الاجتماعات والفعاليات</p>
             <h1>تسجيل الحضور عبر QR</h1>
-            <p>امسح رمز الفعالية، ثم أكّد حضورك باستخدام بيانات العضوية.</p>
+            <p>امسح رمز الفعالية، ثم سجّل دخولك ليتم تثبيت حضورك باسمك.</p>
         </section>
 
         <nav class="mode-tabs" aria-label="خيارات نظام الحضور">
@@ -40,7 +40,7 @@
                     كلمة المرور
                     <input id="checkin-password" type="password" autocomplete="current-password" required>
                 </label>
-                <button type="submit">تأكيد الحضور</button>
+                <button type="submit">تسجيل الدخول وتثبيت الحضور</button>
                 <p class="form-message" id="checkin-message" aria-live="polite"></p>
             </form>
         </section>
@@ -112,6 +112,6 @@
 
     <script src="../assets/js/env.js"></script>
     <script src="./vendor/qrcode.min.js"></script>
-    <script src="./app.js"></script>
+    <script src="./app.js?v=qr-login-checkin-1"></script>
 </body>
 </html>
