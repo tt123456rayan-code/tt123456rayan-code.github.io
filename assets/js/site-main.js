@@ -21,6 +21,7 @@
             const dashboardViewButtons = Array.from(document.querySelectorAll("[data-dashboard-view]"));
             const dashboardPanels = Array.from(document.querySelectorAll("[id^='dashboard-'][id$='-panel']"));
             const dashboardLogout = document.getElementById("dashboard-logout");
+            const memberManagementLink = document.getElementById("dashboard-member-management-link");
             const meetingForm = document.getElementById("meeting-form");
             const meetingsList = document.getElementById("meetings-list");
             const meetingsStatus = document.getElementById("meetings-status");
@@ -857,6 +858,17 @@
                 }
             }
 
+            function canOpenMemberManagement(member) {
+                if (!member || typeof member !== "object") return false;
+                const memberName = String(member.full_name || member.name || "").replace(/\s+/g, " ").trim();
+                return /ريان/.test(memberName) && /عبد/.test(memberName) && /القادر/.test(memberName);
+            }
+
+            function updateMemberManagementAccess(member) {
+                if (!memberManagementLink) return;
+                memberManagementLink.hidden = !canOpenMemberManagement(member);
+            }
+
             function storeMemberSession(member) {
                 if (!member || typeof member !== "object") return;
                 const avatar = member.avatar_url || member.image_url || "";
@@ -868,9 +880,11 @@
                     full_name: member.full_name || "",
                     committee: member.committee || "",
                     role: member.role || "",
-                    avatar_url: typeof avatar === "string" && avatar.length <= 2000 ? avatar : ""
+                    avatar_url: typeof avatar === "string" && avatar.length <= 2000 ? avatar : "",
+                    can_manage_members: Boolean(member.can_manage_members)
                 };
                 signedInMember = safeMember;
+                updateMemberManagementAccess(safeMember);
                 try {
                     sessionStorage.setItem(memberSessionKey, JSON.stringify(safeMember));
                 } catch (_) {
@@ -884,6 +898,7 @@
                     if (!stored || (!stored.membership_id && !stored.membership_number)) return false;
                     signedInMember = stored;
                     renderMemberProfile(stored);
+                    updateMemberManagementAccess(stored);
                     if (meetingForm) meetingForm.hidden = true;
                     if (meetingsStatus) {
                         meetingsStatus.textContent = "أعد تسجيل الدخول فقط عند الحاجة لإدارة الاجتماعات.";
@@ -1211,6 +1226,7 @@
                 dashboardLogout.addEventListener("click", () => {
                     activeMemberSession = null;
                     clearMemberSession();
+                    updateMemberManagementAccess(null);
                     if (meetingForm) meetingForm.hidden = true;
                     if (meetingsList) meetingsList.textContent = "";
                     renderMemberProfile({});
