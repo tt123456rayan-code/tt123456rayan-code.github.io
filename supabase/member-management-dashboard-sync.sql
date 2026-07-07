@@ -285,6 +285,59 @@ set role = excluded.role,
     display_name = excluded.display_name,
     is_active = true;
 
+update public.members m
+set full_name = u.full_name,
+    name = u.full_name,
+    password_hash = u.password_hash,
+    is_active = u.is_active,
+    can_manage_members = coalesce(a.role in ('super_admin', 'discipline_admin'), false)
+from public.member_evolution_users u
+left join public.member_evolution_admins a
+  on a.membership_number = u.membership_number
+ and a.is_active is true
+where m.membership_number = u.membership_number
+   or m.membership_id = u.membership_number;
+
+insert into public.members (
+    membership_number,
+    membership_id,
+    full_name,
+    name,
+    committee,
+    role,
+    is_active,
+    password_hash,
+    can_create_meetings,
+    can_manage_announcements,
+    can_manage_committees,
+    can_manage_structure,
+    can_manage_members
+)
+select
+    u.membership_number,
+    u.membership_number,
+    u.full_name,
+    u.full_name,
+    'غير محدد',
+    'عضو',
+    u.is_active,
+    u.password_hash,
+    false,
+    false,
+    false,
+    false,
+    coalesce(a.role in ('super_admin', 'discipline_admin'), false)
+from public.member_evolution_users u
+left join public.member_evolution_admins a
+  on a.membership_number = u.membership_number
+ and a.is_active is true
+where not exists (
+    select 1
+    from public.members m
+    where m.membership_number = u.membership_number
+       or m.membership_id = u.membership_number
+);
+
 revoke all on function public.member_evolution_create_member(text, text, text, text, text) from public;
 revoke all on function public.member_evolution_delete_member(text, text, uuid) from public;
 grant execute on function public.member_evolution_create_member(text, text, text, text, text) to anon;
