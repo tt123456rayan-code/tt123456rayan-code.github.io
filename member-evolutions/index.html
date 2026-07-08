@@ -71,6 +71,32 @@
                             <input id="new-member-name" maxlength="160" required>
                         </label>
                         <label>
+                            اللجنة
+                            <select id="new-member-committee" required>
+                                <option value="">اختر اللجنة</option>
+                                <option>اللجنة الإدارية</option>
+                                <option>لجنة التكنولوجيا والابتكار</option>
+                                <option>لجنة الصحة</option>
+                                <option>لجنة الشؤون القانونية</option>
+                                <option>لجنة الاقتصاد والريادة</option>
+                                <option>لجنة التمكين السياسي والدبلوماسي</option>
+                                <option>لجنة البيئة</option>
+                                <option>لجنة الإعلام</option>
+                                <option>اللجنة المجتمعية والعمل التطوعي</option>
+                                <option>لجنة العلاقات العامة والشراكات</option>
+                                <option>لجنة الفنون والثقافة</option>
+                            </select>
+                        </label>
+                        <label>
+                            المنصب
+                            <select id="new-member-role" required>
+                                <option value="">اختر المنصب</option>
+                                <option>رئيس</option>
+                                <option>نائب</option>
+                                <option>أمين سر</option>
+                            </select>
+                        </label>
+                        <label>
                             رقم عضوية اختياري
                             <input id="new-member-number" maxlength="32" placeholder="اتركه فارغاً للتوليد">
                         </label>
@@ -93,6 +119,38 @@
                 <form id="evaluation-form" class="admin-card evaluation-panel" hidden>
                     <h2 id="evaluation-title">تعديل تقييم عضو</h2>
                     <input type="hidden" id="target-member-id">
+                    <div class="permission-box" id="profile-edit-box" hidden>
+                        <label>
+                            اسم العضو
+                            <input id="edit-member-name" maxlength="160">
+                        </label>
+                        <label>
+                            اللجنة
+                            <select id="edit-member-committee">
+                                <option value="">اختر اللجنة</option>
+                                <option>اللجنة الإدارية</option>
+                                <option>لجنة التكنولوجيا والابتكار</option>
+                                <option>لجنة الصحة</option>
+                                <option>لجنة الشؤون القانونية</option>
+                                <option>لجنة الاقتصاد والريادة</option>
+                                <option>لجنة التمكين السياسي والدبلوماسي</option>
+                                <option>لجنة البيئة</option>
+                                <option>لجنة الإعلام</option>
+                                <option>اللجنة المجتمعية والعمل التطوعي</option>
+                                <option>لجنة العلاقات العامة والشراكات</option>
+                                <option>لجنة الفنون والثقافة</option>
+                            </select>
+                        </label>
+                        <label>
+                            المنصب
+                            <select id="edit-member-role">
+                                <option value="">اختر المنصب</option>
+                                <option>رئيس</option>
+                                <option>نائب</option>
+                                <option>أمين سر</option>
+                            </select>
+                        </label>
+                    </div>
                     <label>
                         التقييم
                         <select id="rating-select">
@@ -145,6 +203,6 @@
         </section>
     </main>
     <script src="../assets/js/env.js"></script>
-    <script src="./app.js?v=member-permissions-2"></script>
+    <script src="./app.js?v=member-profile-edit-1"></script>
 </body>
 </html>

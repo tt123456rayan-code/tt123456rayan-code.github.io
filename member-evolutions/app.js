@@ -27,6 +27,8 @@
         memberUpdated: document.getElementById("member-updated"),
         createMemberForm: document.getElementById("create-member-form"),
         newMemberName: document.getElementById("new-member-name"),
+        newMemberCommittee: document.getElementById("new-member-committee"),
+        newMemberRole: document.getElementById("new-member-role"),
         newMemberNumber: document.getElementById("new-member-number"),
         newMemberPassword: document.getElementById("new-member-password"),
         createMessage: document.getElementById("create-message"),
@@ -36,6 +38,10 @@
         evaluationForm: document.getElementById("evaluation-form"),
         evaluationTitle: document.getElementById("evaluation-title"),
         targetMemberId: document.getElementById("target-member-id"),
+        profileEditBox: document.getElementById("profile-edit-box"),
+        editMemberName: document.getElementById("edit-member-name"),
+        editMemberCommittee: document.getElementById("edit-member-committee"),
+        editMemberRole: document.getElementById("edit-member-role"),
         ratingSelect: document.getElementById("rating-select"),
         warningSelect: document.getElementById("warning-select"),
         statusSelect: document.getElementById("status-select"),
@@ -97,6 +103,10 @@
     function isProtectedRayan(member) {
         const fullName = String(member && member.full_name || "").replace(/\s+/g, " ").trim();
         return /ريان/.test(fullName) && /عبد/.test(fullName) && /القادر/.test(fullName);
+    }
+
+    function isViewerRayan() {
+        return isProtectedRayan(state.viewer);
     }
 
     function formatDate(value) {
@@ -162,6 +172,8 @@
                         <span class="badge ${warningLevel >= 3 ? "danger" : ""}">${warningText(warningLevel)}</span>
                         <span class="badge ${member.status === "مطرود" ? "danger" : ""}">${escapeHtml(member.status || "مستقيم")}</span>
                         <span class="badge">${escapeHtml(roleLabel(member.admin_role))}</span>
+                        ${member.committee ? `<span class="badge">${escapeHtml(member.committee)}</span>` : ""}
+                        ${member.role ? `<span class="badge">${escapeHtml(member.role)}</span>` : ""}
                     </div>
                 </div>
             `;
@@ -183,6 +195,11 @@
         els.warningSelect.value = String(member.warning_level || 0);
         els.statusSelect.value = member.status || "مستقيم";
         els.notesInput.value = member.notes || "";
+        const canEditProfile = isViewerRayan() && !isProtectedRayan(member);
+        els.profileEditBox.hidden = !canEditProfile;
+        els.editMemberName.value = member.full_name || "";
+        els.editMemberCommittee.value = member.committee || "";
+        els.editMemberRole.value = member.role || "";
         els.permissionBox.hidden = !canGrantPermissions();
         els.permissionSelect.value = member.admin_role || "none";
         els.deleteButton.hidden = !canManageMembers() || isProtectedRayan(member);
@@ -271,6 +288,8 @@
                 admin_membership_number: state.membershipNumber,
                 admin_password: state.password,
                 new_full_name: els.newMemberName.value.trim(),
+                new_committee: els.newMemberCommittee.value,
+                new_role: els.newMemberRole.value,
                 requested_membership_number: els.newMemberNumber.value.trim() || null,
                 temporary_password: els.newMemberPassword.value.trim() || null
             });
@@ -307,6 +326,19 @@
             });
             if (!result || result.success === false) {
                 throw new Error("save_failed");
+            }
+            if (isViewerRayan() && state.selectedMember && !isProtectedRayan(state.selectedMember)) {
+                const profileResult = await rpc("member_evolution_update_member_profile", {
+                    admin_membership_number: state.membershipNumber,
+                    admin_password: state.password,
+                    target_member_id: els.targetMemberId.value,
+                    new_full_name: els.editMemberName.value.trim(),
+                    new_committee: els.editMemberCommittee.value,
+                    new_role: els.editMemberRole.value
+                });
+                if (!profileResult || profileResult.success === false) {
+                    throw new Error("profile_save_failed");
+                }
             }
             setMessage(els.evaluationMessage, "تم حفظ التقييم.");
             await refreshPortal();

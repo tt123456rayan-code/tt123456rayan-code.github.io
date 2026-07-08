@@ -157,10 +157,14 @@ begin
 end;
 $$;
 
+drop function if exists public.member_evolution_create_member(text, text, text, text, text);
+
 create or replace function public.member_evolution_create_member(
     admin_membership_number text,
     admin_password text,
     new_full_name text,
+    new_committee text default null,
+    new_role text default null,
     requested_membership_number text default null,
     temporary_password text default null
 )
@@ -174,6 +178,8 @@ declare
     admin_member record;
     final_membership_number text;
     final_password text;
+    final_committee text;
+    final_role text;
     new_member_id uuid;
 begin
     select * into admin_member
@@ -186,6 +192,17 @@ begin
 
     if new_full_name is null or char_length(btrim(new_full_name)) < 2 then
         return jsonb_build_object('success', false, 'message', 'invalid_name');
+    end if;
+
+    final_committee := nullif(btrim(coalesce(new_committee, '')), '');
+    final_role := nullif(btrim(coalesce(new_role, '')), '');
+
+    if final_committee is null then
+        return jsonb_build_object('success', false, 'message', 'invalid_committee');
+    end if;
+
+    if final_role not in ('رئيس', 'نائب', 'أمين سر') then
+        return jsonb_build_object('success', false, 'message', 'invalid_role');
     end if;
 
     final_membership_number := nullif(btrim(coalesce(requested_membership_number, '')), '');
@@ -211,6 +228,8 @@ begin
             'id', new_member_id,
             'membership_number', final_membership_number,
             'full_name', btrim(new_full_name),
+            'committee', final_committee,
+            'role', final_role,
             'temporary_password', final_password
         )
     );
@@ -463,14 +482,14 @@ on conflict (member_id) do nothing;
 
 revoke all on function public.member_evolution_auth(text, text) from public;
 revoke all on function public.member_evolution_get_portal(text, text) from public;
-revoke all on function public.member_evolution_create_member(text, text, text, text, text) from public;
+revoke all on function public.member_evolution_create_member(text, text, text, text, text, text, text) from public;
 revoke all on function public.member_evolution_save_evaluation(text, text, uuid, text, integer, text, text) from public;
 revoke all on function public.member_evolution_deactivate_member(text, text, uuid) from public;
 revoke all on function public.member_evolution_delete_member(text, text, uuid) from public;
 revoke all on function public.member_evolution_set_admin_role(text, text, uuid, text) from public;
 
 grant execute on function public.member_evolution_get_portal(text, text) to anon;
-grant execute on function public.member_evolution_create_member(text, text, text, text, text) to anon;
+grant execute on function public.member_evolution_create_member(text, text, text, text, text, text, text) to anon;
 grant execute on function public.member_evolution_save_evaluation(text, text, uuid, text, integer, text, text) to anon;
 grant execute on function public.member_evolution_deactivate_member(text, text, uuid) to anon;
 grant execute on function public.member_evolution_delete_member(text, text, uuid) to anon;
