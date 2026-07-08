@@ -1,4 +1,4 @@
--- Adds Rayan-only member profile editing for the evaluation portal.
+﻿-- Adds Rayan-only member profile editing for the evaluation portal.
 -- Run manually in Supabase SQL Editor.
 
 create or replace function public.member_evolution_get_portal(
@@ -137,7 +137,7 @@ begin
         return jsonb_build_object('success', false, 'message', 'invalid_committee');
     end if;
 
-    if final_role not in ('رئيس', 'نائب', 'أمين سر') then
+    if final_role not in ('رئيس', 'نائب', 'أمين سر', 'عضو') then
         return jsonb_build_object('success', false, 'message', 'invalid_role');
     end if;
 

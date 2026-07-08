@@ -1,4 +1,4 @@
--- Sync member evaluation management with the main member login dashboard.
+﻿-- Sync member evaluation management with the main member login dashboard.
 -- Run this file manually in Supabase SQL Editor.
 -- It does not expose password hashes and does not use service_role keys.
 
@@ -143,7 +143,7 @@ begin
         return jsonb_build_object('success', false, 'message', 'invalid_committee');
     end if;
 
-    if final_role not in ('رئيس', 'نائب', 'أمين سر') then
+    if final_role not in ('رئيس', 'نائب', 'أمين سر', 'عضو') then
         return jsonb_build_object('success', false, 'message', 'invalid_role');
     end if;
 

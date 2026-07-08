@@ -1,4 +1,4 @@
-create extension if not exists pgcrypto;
+﻿create extension if not exists pgcrypto;
 
 create sequence if not exists public.member_evolution_membership_seq start 1001;
 
@@ -201,7 +201,7 @@ begin
         return jsonb_build_object('success', false, 'message', 'invalid_committee');
     end if;
 
-    if final_role not in ('رئيس', 'نائب', 'أمين سر') then
+    if final_role not in ('رئيس', 'نائب', 'أمين سر', 'عضو') then
         return jsonb_build_object('success', false, 'message', 'invalid_role');
     end if;
 
