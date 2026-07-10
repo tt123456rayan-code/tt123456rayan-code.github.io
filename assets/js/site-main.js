@@ -99,6 +99,20 @@
                 });
             }
 
+            function updateThemeToggle() {
+                if (!themeToggle) return;
+                const isDark = document.body.classList.contains("dark-mode");
+                themeToggle.textContent = currentLanguage === "en"
+                    ? (isDark ? "Light Mode" : "Dark Mode")
+                    : (isDark ? "الوضع الفاتح" : "الوضع الداكن");
+                themeToggle.setAttribute(
+                    "aria-label",
+                    currentLanguage === "en"
+                        ? (isDark ? "Switch to light mode" : "Switch to dark mode")
+                        : (isDark ? "تفعيل الوضع الفاتح" : "تفعيل الوضع الداكن")
+                );
+            }
+
             function readAnalytics() {
                 try {
                     return JSON.parse(localStorage.getItem("himma_analytics_v1")) || {};
@@ -443,10 +457,7 @@
                 if (languageButton) {
                     languageButton.textContent = currentLanguage === "en" ? "AR" : "EN";
                 }
-                if (themeToggle) {
-                    const isDark = document.body.classList.contains("dark-mode");
-                    themeToggle.textContent = currentLanguage === "en" ? (isDark ? "Light Mode" : "Dark Mode") : (isDark ? "الوضع الفاتح" : "الوضع الداكن");
-                }
+                updateThemeToggle();
                 const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT);
                 const nodes = [];
                 while (walker.nextNode()) {
@@ -954,8 +965,8 @@
 
             if (themeToggle) {
                 themeToggle.addEventListener("click", () => {
-                    const isDark = document.body.classList.toggle("dark-mode");
-                    themeToggle.textContent = currentLanguage === "en" ? (isDark ? "Light Mode" : "Dark Mode") : (isDark ? "الوضع الفاتح" : "الوضع الداكن");
+                    document.body.classList.toggle("dark-mode");
+                    updateThemeToggle();
                     applyLogoMode();
                     trackSiteEvent("theme_toggle", { section: window.location.hash.replace("#", "") || "home" });
                 });

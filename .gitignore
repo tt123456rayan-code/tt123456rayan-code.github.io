@@ -10,5 +10,10 @@ backups/
 backup-before-ai-himma/
 *.zip
 assets/js/env.js
-assets/images/
+assets/images/*
+!assets/images/embedded/
+!assets/images/embedded/**
+!assets/images/logo-pdf-optimized.webp
+!assets/images/supporters/
+!assets/images/supporters/**
 assets/images-manifest.json

@@ -508,7 +508,7 @@
         ];
         const ranked = rows
                 .map((row) => ({ row, score: scoreKnowledgeRow(row, question) }))
-                .filter((item) => item.score >= 14 && getAnswerText(item.row))
+                .filter((item) => item.score >= 20 && getAnswerText(item.row))
                 .sort((a, b) => b.score - a.score)
             ;
 
