@@ -443,7 +443,7 @@ insert into public.committee_members (committee_slug, member_name, role_ar, role
 values
     ('administrative', 'عمر دقروق', 'رئيس مبادرة همّة', 'President of Himma Initiative', 10, true),
     ('administrative', 'معن مصطفى العدوان', 'المستشار الأعلى لمبادرة همّة', 'Senior Advisor to Himma Initiative', 20, false),
-    ('administrative', 'علاء العبادي', 'المستشار الثاني لرئيس مبادرة همّة', 'Second Advisor to the President of Himma Initiative', 30, false),
+    ('administrative', 'علاء العبادي', 'المستشار الأعلى للشؤون الإدارية', 'Senior Advisor for Administrative Affairs', 30, false),
     ('administrative', 'زيد عبد الله المناصير', 'الأمين العام للمبادرة', 'Secretary General of the Initiative', 40, false),
     ('technology', 'ريان عبد القادر ابوجاموس', 'رئيس لجنة التكنولوجيا والابتكار', 'Chair of the Technology and Innovation Committee', 10, true),
     ('health', 'مها دكيدك', 'رئيسة لجنة الصحة', 'Chair of the Health Committee', 10, true),

@@ -256,7 +256,7 @@
           "بطاقة تعريفية": "Profile Card",
           "رئيس مبادرة همّة": "President of Himma Initiative",
           "المستشار الأعلى لمبادرة همّة": "Senior Advisor to Himma Initiative",
-          "المستشار الثاني لرئيس مبادرة همّة": "Second Advisor to the President of Himma Initiative",
+          "المستشار الأعلى للشؤون الإدارية": "Senior Advisor for Administrative Affairs",
           "الأمين العام للمبادرة": "Secretary General of the Initiative",
           "رئيس لجنة التكنولوجيا والابتكار": "Chair of Technology and Innovation Committee",
           "رئيس لجنة الصحة": "Chair of Health Committee",
