@@ -1,0 +1,151 @@
+:root {
+    --green: #007a3d;
+    --red: #ce1126;
+    --black: #111713;
+    --muted: #5e6862;
+    --paper: #ffffff;
+    font-family: Tahoma, Arial, sans-serif;
+}
+
+* { box-sizing: border-box; }
+
+body {
+    margin: 0;
+    color: var(--black);
+    background: #eef2ef;
+}
+
+.certificate-page {
+    width: min(1180px, calc(100% - 24px));
+    margin: 24px auto;
+}
+
+.certificate-toolbar {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 16px;
+}
+
+.certificate-toolbar a,
+.certificate-toolbar button {
+    min-height: 44px;
+    padding: 10px 18px;
+    border: 1px solid var(--green);
+    border-radius: 7px;
+    background: var(--green);
+    color: #ffffff;
+    font: inherit;
+    font-weight: 800;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+.certificate-status {
+    padding: 18px;
+    border: 1px solid #d8dfda;
+    border-radius: 8px;
+    background: #ffffff;
+    text-align: center;
+    font-weight: 700;
+}
+
+.certificate-sheet {
+    aspect-ratio: 1.414 / 1;
+    min-height: 620px;
+    padding: 18px;
+    background: var(--paper);
+    box-shadow: 0 24px 60px rgba(17, 23, 19, 0.15);
+}
+
+.certificate-border {
+    height: 100%;
+    display: grid;
+    grid-template-rows: auto 1fr auto;
+    gap: 18px;
+    padding: clamp(24px, 4vw, 54px);
+    border: 3px solid var(--green);
+    outline: 1px solid var(--red);
+    outline-offset: -12px;
+    background:
+        linear-gradient(135deg, rgba(0, 122, 61, 0.04), transparent 32%),
+        #ffffff;
+}
+
+.certificate-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 24px;
+    border-bottom: 2px solid rgba(0, 122, 61, 0.2);
+    padding-bottom: 18px;
+}
+
+.certificate-header img {
+    width: min(260px, 35%);
+    height: auto;
+    object-fit: contain;
+}
+
+.certificate-header p,
+.certificate-header h1 { margin: 0; }
+.certificate-header p { color: var(--green); font-weight: 800; }
+.certificate-header h1 { margin-top: 8px; font-size: clamp(1.8rem, 4vw, 3rem); }
+
+.certificate-content {
+    display: grid;
+    align-content: center;
+    justify-items: center;
+    gap: 12px;
+    text-align: center;
+}
+
+.certificate-content p,
+.certificate-content h2,
+.certificate-content h3 { margin: 0; }
+.certificate-content > p { color: var(--muted); line-height: 1.8; }
+.certificate-content h2 { color: var(--green); font-size: clamp(2rem, 5vw, 3.8rem); }
+.certificate-content h3 { color: var(--red); font-size: clamp(1.45rem, 3vw, 2.35rem); }
+.certificate-membership { direction: rtl; }
+
+.certificate-meta {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 12px 28px;
+    margin-top: 10px;
+}
+
+.certificate-footer {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 24px;
+    border-top: 2px solid rgba(0, 122, 61, 0.2);
+    padding-top: 18px;
+}
+
+.certificate-footer > div { display: grid; gap: 6px; }
+.certificate-footer span { color: var(--muted); font-size: 0.9rem; }
+.certificate-verification { justify-items: center; text-align: center; }
+#certificate-qr { width: 112px; height: 112px; }
+#certificate-qr img, #certificate-qr canvas { width: 112px !important; height: 112px !important; }
+
+@media (max-width: 700px) {
+    .certificate-page { width: min(100% - 12px, 680px); margin: 6px auto; }
+    .certificate-sheet { aspect-ratio: auto; min-height: calc(100vh - 90px); padding: 8px; }
+    .certificate-border { padding: 28px 18px; outline-offset: -8px; }
+    .certificate-header { flex-direction: column; text-align: center; }
+    .certificate-header img { width: min(240px, 75%); }
+    .certificate-footer { align-items: center; flex-direction: column; text-align: center; }
+}
+
+@media print {
+    @page { size: A4 landscape; margin: 0; }
+    body { background: #ffffff; }
+    .certificate-page { width: 100%; margin: 0; }
+    .certificate-toolbar,
+    .certificate-status { display: none !important; }
+    .certificate-sheet { width: 297mm; height: 210mm; min-height: 0; padding: 8mm; box-shadow: none; }
+    .certificate-border { padding: 14mm; }
+}

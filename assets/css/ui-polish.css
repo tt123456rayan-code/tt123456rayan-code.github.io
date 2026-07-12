@@ -1888,3 +1888,173 @@ body.dark-mode .partner-link:hover {
         content: "\2600";
     }
 }
+
+/* Member certificates, committee tasks, and request center. */
+.service-section {
+    display: grid;
+    gap: 12px;
+    margin-top: 22px;
+}
+
+.service-section h4 {
+    margin: 0;
+    color: var(--green);
+    font-size: 1.08rem;
+}
+
+.service-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 14px;
+    margin-top: 16px;
+}
+
+.service-card {
+    display: grid;
+    align-content: start;
+    gap: 10px;
+    min-width: 0;
+    padding: 16px;
+    border: 1px solid var(--line);
+    border-top: 4px solid var(--green);
+    border-radius: 8px;
+    background: var(--white);
+    box-shadow: 0 8px 22px rgba(17, 17, 17, 0.07);
+}
+
+.service-card h4,
+.service-card p {
+    margin: 0;
+    overflow-wrap: anywhere;
+}
+
+.service-card h4 {
+    color: var(--black);
+    font-size: 1.05rem;
+}
+
+.service-card-top {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 10px;
+}
+
+.service-field {
+    color: var(--muted);
+    line-height: 1.65;
+}
+
+.service-field strong {
+    color: var(--black);
+}
+
+.service-status {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: fit-content;
+    min-height: 28px;
+    padding: 4px 9px;
+    border-radius: 999px;
+    background: #edf4f0;
+    color: #174d32;
+    font-size: 0.78rem;
+    font-weight: 800;
+    white-space: nowrap;
+}
+
+.status-in_progress,
+.status-in_review,
+.status-pending {
+    background: #fff5d9;
+    color: #715000;
+}
+
+.status-completed,
+.status-approved {
+    background: #e4f5ea;
+    color: #086b38;
+}
+
+.status-rejected {
+    background: #fde8eb;
+    color: #a30f26;
+}
+
+.service-action {
+    width: fit-content;
+    margin-top: 4px;
+    text-decoration: none;
+}
+
+.service-inline-actions,
+.request-admin-controls {
+    display: grid;
+    grid-template-columns: minmax(150px, 1fr) auto;
+    gap: 10px;
+    align-items: center;
+    margin-top: 4px;
+}
+
+.request-admin-controls textarea {
+    grid-column: 1 / -1;
+    min-height: 90px;
+}
+
+.request-admin-controls .service-action {
+    grid-column: 1 / -1;
+}
+
+.service-response {
+    padding: 10px 12px;
+    border-inline-start: 4px solid var(--green);
+    background: var(--soft);
+    line-height: 1.75;
+}
+
+.service-empty {
+    grid-column: 1 / -1;
+    margin: 0;
+    padding: 18px;
+    border: 1px dashed var(--line);
+    border-radius: 8px;
+    text-align: center;
+}
+
+body.dark-mode .service-card {
+    background: #0d1411;
+    border-color: rgba(255, 255, 255, 0.13);
+    box-shadow: 0 10px 28px rgba(0, 0, 0, 0.28);
+}
+
+body.dark-mode .service-card h4,
+body.dark-mode .service-field strong {
+    color: #f6f8f7;
+}
+
+body.dark-mode .service-field,
+body.dark-mode .service-card p {
+    color: rgba(255, 255, 255, 0.78);
+}
+
+body.dark-mode .service-response {
+    background: #07100c;
+}
+
+@media (max-width: 620px) {
+    .service-list {
+        grid-template-columns: 1fr;
+    }
+
+    .service-inline-actions,
+    .request-admin-controls {
+        grid-template-columns: 1fr;
+    }
+
+    .service-action,
+    .service-inline-actions .btn,
+    .request-admin-controls .btn {
+        width: 100%;
+    }
+}

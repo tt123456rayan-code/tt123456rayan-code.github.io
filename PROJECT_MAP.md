@@ -14,6 +14,7 @@
 - `assets/js/auth.js`: تسجيل الدخول، لوحة الإدارة/العضو، مزامنة أعضاء اللجان والهيكل الإداري مع Supabase.
 - `assets/js/himma-ai-chat.js`: واجهة مساعد همّة AI في المتصفح، اللغة، الإرسال إلى Netlify Function، fallback المحلي.
 - `assets/js/ui-polish.js`: أنيميشن/تحسينات واجهة خارجية لتجنب CSP inline script.
+- `assets/js/member-services.js`: واجهة الشهادات الإلكترونية ومهام اللجان ومركز الطلبات داخل لوحة العضو.
 
 ## ملفات AI
 - `assets/js/himma-ai-chat.js`: واجهة مساعد همّة AI. بعد التحويل إلى GitHub Pages لا تستدعي Backend، وتعرض رسالة تعطيل لأن GitHub Pages لا يشغل Functions.
@@ -34,6 +35,7 @@
 - `supabase/`: ملفات SQL/مراجع قاعدة البيانات.
 - `supabase/attendance-qr.sql`: جداول ودوال نظام حضور الاجتماعات عبر QR.
 - `supabase/member-meetings-rpc.sql`: دوال تحميل وإنشاء الاجتماعات من تسجيل دخول الأعضاء الحالي.
+- `supabase/member-services.sql`: جداول ودوال وصلاحيات الشهادات ومهام اللجان وطلبات الأعضاء.
 - الجداول المهمة حسب العمل السابق: `committee_members`, `members`, `ai_usage_limits`, `ai_chat_logs`.
 - أي تعديل على الصلاحيات أو قاعدة البيانات يجب أن يكون موجّهًا ومتحققًا، بدون تغيير schema إلا للضرورة.
 
@@ -42,6 +44,11 @@
 - `attendance/app.js`: استدعاءات Supabase وتسجيل الحضور وعرض السجل.
 - `attendance/styles.css`: تنسيق صفحة الحضور المتجاوب.
 - `attendance/vendor/qrcode.min.js`: مولد QR محلي خفيف.
+
+## خدمات الأعضاء
+- `certificate/index.html`: صفحة التحقق العامة من الشهادة عبر رمزها، مع عرض QR وطباعة PDF.
+- `certificate/app.js`: التحقق من الشهادة عبر دالة Supabase الآمنة `member_certificate_verify`.
+- لوحة العضو في `index.html`: تبويبات الشهادات، مهام اللجان، ومركز الطلبات.
 
 ## البناء والنشر
 - `package.json`: يحتوي `npm run build`.

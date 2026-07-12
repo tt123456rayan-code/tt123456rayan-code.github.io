@@ -810,6 +810,42 @@
                 return response.json();
             }
 
+            const memberServiceRpcCredentials = Object.freeze({
+                member_services_portal: ["input_membership_id", "input_password"],
+                member_issue_certificate: ["input_admin_membership_id", "input_admin_password"],
+                member_revoke_certificate: ["input_admin_membership_id", "input_admin_password"],
+                member_create_committee_task: ["input_membership_id", "input_password"],
+                member_update_committee_task_status: ["input_membership_id", "input_password"],
+                member_submit_request: ["input_membership_id", "input_password"],
+                member_respond_request: ["input_admin_membership_id", "input_admin_password"]
+            });
+
+            window.HIMMA_MEMBER_API = Object.freeze({
+                isAuthenticated() {
+                    return Boolean(activeMemberSession && activeMemberSession.membershipId && activeMemberSession.password);
+                },
+                getMember() {
+                    return signedInMember ? { ...signedInMember } : null;
+                },
+                async call(functionName, payload = {}) {
+                    const credentialNames = memberServiceRpcCredentials[functionName];
+                    if (!credentialNames || !activeMemberSession) {
+                        throw new Error("Member service session unavailable");
+                    }
+                    return memberRpc(functionName, {
+                        ...payload,
+                        [credentialNames[0]]: activeMemberSession.membershipId,
+                        [credentialNames[1]]: activeMemberSession.password
+                    });
+                }
+            });
+
+            function notifyMemberServiceSession(authenticated) {
+                document.dispatchEvent(new CustomEvent("himma:member-session", {
+                    detail: { authenticated: Boolean(authenticated) }
+                }));
+            }
+
             function escapeHtml(value) {
                 return String(value || "")
                     .replace(/&/g, "&amp;")
@@ -1204,6 +1240,7 @@
                         renderMemberProfile(member);
                         storeMemberSession(member);
                         activeMemberSession = { membershipId, password };
+                        notifyMemberServiceSession(true);
                         try {
                             await loadMemberMeetings();
                         } catch (_) {
@@ -1236,6 +1273,7 @@
             if (dashboardLogout) {
                 dashboardLogout.addEventListener("click", () => {
                     activeMemberSession = null;
+                    notifyMemberServiceSession(false);
                     clearMemberSession();
                     updateMemberManagementAccess(null);
                     if (meetingForm) meetingForm.hidden = true;

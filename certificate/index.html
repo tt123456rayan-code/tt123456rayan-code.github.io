@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; connect-src 'self' https://*.supabase.co; img-src 'self' data:; style-src 'self'; script-src 'self'; base-uri 'self'; form-action 'self'">
+    <title>التحقق من شهادة مبادرة همّة</title>
+    <link rel="stylesheet" href="./styles.css?v=1">
+</head>
+<body>
+    <main class="certificate-page">
+        <div class="certificate-toolbar" aria-label="أدوات الشهادة">
+            <a href="../#dashboard">العودة إلى الموقع</a>
+            <button id="print-certificate" type="button" hidden>طباعة / حفظ PDF</button>
+        </div>
+        <p class="certificate-status" id="certificate-status" aria-live="polite">جاري التحقق من الشهادة...</p>
+        <article class="certificate-sheet" id="certificate-sheet" hidden>
+            <div class="certificate-border">
+                <header class="certificate-header">
+                    <img src="../assets/images/embedded/94261e3b2682b257.webp" alt="شعار مبادرة همّة" width="320" height="138">
+                    <div>
+                        <p>مبادرة همّة الوطنية للتنمية الشبابية</p>
+                        <h1>شهادة إلكترونية معتمدة</h1>
+                    </div>
+                </header>
+                <section class="certificate-content">
+                    <p>تُمنح هذه الشهادة إلى</p>
+                    <h2 id="certificate-member-name">-</h2>
+                    <p class="certificate-membership">رقم العضوية: <strong id="certificate-membership">-</strong></p>
+                    <h3 id="certificate-title">-</h3>
+                    <p id="certificate-description"></p>
+                    <div class="certificate-meta">
+                        <p id="certificate-activity-wrap" hidden>النشاط المعتمد: <strong id="certificate-activity"></strong></p>
+                        <p id="certificate-hours-wrap" hidden>ساعات التطوع: <strong id="certificate-hours"></strong></p>
+                        <p>تاريخ الإصدار: <strong id="certificate-date">-</strong></p>
+                    </div>
+                </section>
+                <footer class="certificate-footer">
+                    <div>
+                        <span>أصدرها</span>
+                        <strong id="certificate-issuer">-</strong>
+                    </div>
+                    <div class="certificate-verification">
+                        <div id="certificate-qr" aria-label="رمز التحقق QR"></div>
+                        <span>رمز التحقق</span>
+                        <strong id="certificate-code" dir="ltr">-</strong>
+                    </div>
+                </footer>
+            </div>
+        </article>
+    </main>
+    <script src="../assets/js/env.js?v=join-requests-2"></script>
+    <script src="../attendance/vendor/qrcode.min.js"></script>
+    <script src="./app.js?v=1"></script>
+</body>
+</html>
