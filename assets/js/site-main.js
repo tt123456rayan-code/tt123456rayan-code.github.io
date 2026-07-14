@@ -317,8 +317,6 @@
           "شارك في مسابقة العلوم النووية الأردنية": "Participated in the Jordanian Nuclear Science Competition",
           "حاصل على دورات شرعية من مبادرة إسناد للدراسات الشرعية وشهادات إجازة بالسند المتصل": "Completed Sharia courses through the Isnad initiative for Sharia studies and holds connected-chain ijazah certificates",
           "يتابع دورة متخصصة في إدارة المشاريع الاجتماعية من أكاديمية You Si Net": "Currently taking a specialized social project management course from You Si Net Academy",
-          "معن مصطفى العدوان": "Maan Mustafa Al-Adwan",
-          "المستشار الأعلى لشؤون العلاقات العامة، يساند الفريق في التوجيه العام وبناء الرؤية المؤسسية ودعم القرارات التنظيمية.": "Senior Advisor for Public Relations Affairs, supporting the team with general guidance, institutional vision, and organizational decision-making.",
           "علاء العبادي": "Alaa Al-Abbadi",
           "متخصص في العلاقات الدولية والإتيكيت والبروتوكول الدبلوماسي، ويمتلك تأهيلاً عسكرياً واستخباراتياً يعزز قدرته على التحليل وقراءة المعطيات والتعامل مع المواقف المعقدة بانضباط.": "Specialized in international relations, etiquette, and diplomatic protocol, with military and intelligence training that strengthens his ability to analyze, read contexts, and handle complex situations with discipline.",
           "تدريب مكثف في فهم التوازنات السياسية والدبلوماسية": "Intensive training in understanding political and diplomatic balances",
