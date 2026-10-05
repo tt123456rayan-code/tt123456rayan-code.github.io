@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>شهادة أكاديمية همّة</title>
+  <link rel="stylesheet" href="./certificate.css">
+</head>
+<body>
+  <main class="certificate-page">
+    <article class="certificate-card" id="certificate-card" hidden>
+      <img src="../assets/images/embedded/94261e3b2682b257.webp" alt="شعار مبادرة همّة" class="certificate-logo">
+      <p class="certificate-kicker">مبادرة همّة الشبابية الوطنية</p>
+      <h1>شهادة إتمام</h1>
+      <p class="certificate-text">تشهد مبادرة همّة بأن</p>
+      <h2 id="certificate-name"></h2>
+      <p class="certificate-text">قد أكمل مادة <strong id="certificate-course"></strong> بنجاح</p>
+      <div class="certificate-meta"><span>تاريخ الإصدار: <b id="certificate-date"></b></span><span>الرقم التسلسلي: <b id="certificate-serial"></b></span></div>
+      <div class="certificate-bottom"><div id="certificate-qr" aria-label="رمز تحقق الشهادة"></div><p>يمكن التحقق من هذه الشهادة عبر رمز QR أو رابط التحقق.</p></div>
+    </article>
+    <section class="certificate-actions" id="certificate-actions" hidden><button id="print-certificate" type="button">تنزيل PDF / طباعة</button><a href="./">العودة إلى الأكاديمية</a></section>
+    <p id="certificate-message" class="certificate-message">جارٍ التحقق من الشهادة...</p>
+  </main>
+  <script src="../assets/js/env.js"></script>
+  <script src="../attendance/vendor/qrcode.min.js"></script>
+  <script src="./certificate.js"></script>
+</body>
+</html>

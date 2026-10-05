@@ -1,0 +1,22 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>إدارة أكاديمية همّة</title>
+  <link rel="stylesheet" href="./academy.css?v=academy-auth-5">
+</head>
+<body>
+  <header class="academy-header"><a class="brand" href="./"><img src="../assets/images/embedded/94261e3b2682b257.webp" alt="شعار مبادرة همّة"></a><nav class="academy-nav"><a href="#content">المحتوى</a><a href="#learners">الأعضاء</a><a href="#results">النتائج والشهادات</a></nav><div class="header-actions"><a class="site-link" href="./">الأكاديمية</a></div></header>
+  <main id="academy-main">
+    <section class="hero admin-hero"><div class="hero-copy"><p class="eyebrow">إدارة محمية</p><h1>إدارة أكاديمية همّة</h1><p class="hero-lead" id="admin-status">جارٍ التحقق من صلاحية الحساب.</p></div></section>
+    <section class="admin-shell" id="admin-panel" hidden>
+      <section id="content"><div class="section-heading"><div><p class="eyebrow">المحتوى</p><h2>المواد والوحدات والدروس والأسئلة</h2></div><p>تعديل المحتوى منشورًا أو مسودات من حساب مسؤول فقط.</p></div><div id="content-summary" class="admin-summary"></div><div id="content-publish-list" class="admin-table-wrap"></div><form id="content-create-form" class="admin-editor"><div class="admin-editor-head"><h3>إضافة محتوى</h3><select id="content-type" name="content_type"><option value="course">مادة</option><option value="unit">وحدة</option><option value="lesson">درس</option><option value="question">سؤال اختبار</option></select></div><div id="content-fields"></div><button class="course-button" type="submit">حفظ المحتوى</button><p id="content-message" class="goal-message" aria-live="polite"></p></form></section>
+      <section id="learners"><div class="section-heading"><div><p class="eyebrow">الأعضاء</p><h2>ملفات المتعلمين</h2></div><p>ابحث حسب الاسم أو اللجنة أو المحافظة أو المهارة.</p></div><div class="admin-filters"><input id="learner-search" placeholder="ابحث بالاسم أو المهارة"><input id="committee-filter" placeholder="اللجنة"><input id="governorate-filter" placeholder="المحافظة"></div><div id="learners-table" class="admin-table-wrap"></div></section>
+      <section id="results"><div class="section-heading"><div><p class="eyebrow">النتائج والشهادات</p><h2>متابعة محاولات المتعلمين</h2></div><p>إلغاء شهادة لا يحذف سجل المحاولة أو بيانات المتعلم.</p></div><div id="results-table" class="admin-table-wrap"></div><div id="certificates-table" class="admin-table-wrap"></div></section>
+    </section>
+  </main>
+  <script src="../assets/js/env.js"></script>
+  <script src="./academy-admin.js"></script>
+</body>
+</html>

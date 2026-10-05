@@ -1,0 +1,176 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="أكاديمية همّة للتعلّم والتمكين الشبابي.">
+  <title>أكاديمية همّة | مبادرة همّة الشبابية</title>
+  <link rel="stylesheet" href="./academy.css?v=academy-auth-6">
+</head>
+<body>
+  <a class="skip-link" href="#academy-main">انتقل إلى المحتوى</a>
+  <header class="academy-header">
+    <a class="brand" href="../" aria-label="العودة إلى موقع مبادرة همّة">
+      <img src="../assets/images/embedded/94261e3b2682b257.webp" alt="شعار مبادرة همّة">
+    </a>
+    <nav class="academy-nav" aria-label="التنقل">
+      <a href="#paths">المسارات</a>
+      <a href="#library">مكتبة التمكين</a>
+      <a href="#how-it-works">كيف تبدأ</a>
+    </nav>
+    <div class="header-actions">
+      <button class="theme-button" id="theme-button" type="button" aria-label="تفعيل الوضع الداكن">◐</button>
+      <button class="account-button" id="account-open" type="button">تسجيل الدخول</button>
+      <a class="site-link" href="../">الموقع الرئيسي <span aria-hidden="true">←</span></a>
+    </div>
+  </header>
+
+  <main id="academy-main">
+    <section class="hero" aria-labelledby="academy-title">
+      <div class="hero-copy">
+        <p class="eyebrow">منصة همّة للتعلّم والتمكين</p>
+        <h1 id="academy-title">معرفة تُنمّي الوعي،<br>ومهارة تصنع أثرًا.</h1>
+        <p class="hero-lead">مسارات تعليمية وتوعوية مختصرة تساعد الشباب على بناء فهم أعمق للهوية، التعلّم، والمسؤولية في الحياة الرقمية والمجتمعية.</p>
+        <div class="hero-actions">
+          <a class="button button-primary" href="#paths">ابدأ مسارك <span aria-hidden="true">←</span></a>
+          <button class="button button-quiet" id="diagnostic-start" type="button">حدّد مستواك</button>
+          <a class="button button-quiet" href="#how-it-works">كيف تعمل المنصة</a>
+        </div>
+      </div>
+      <aside class="learning-card" aria-label="ملخص التقدم">
+        <div class="learning-card-top"><span class="status-dot"></span><span>رحلة تعلّمك</span></div>
+        <p class="learning-kicker">إنجازك الحالي</p>
+        <p class="learning-value" id="progress-value">0%</p>
+        <div class="progress-track" aria-hidden="true"><span id="progress-bar"></span></div>
+        <p class="learning-note" id="progress-note">ابدأ أول درس لتُحفظ خطواتك على هذا الجهاز.</p>
+        <div class="learning-card-footer"><span>3 مسارات تأسيسية</span><span>محتوى ذاتي</span></div>
+      </aside>
+    </section>
+
+    <section class="trust-strip" aria-label="مبادئ المنصة">
+      <div><span>01</span><p>محتوى مبسّط ومركّز</p></div>
+      <div><span>02</span><p>تعلّم ذاتي وفق وقتك</p></div>
+      <div><span>03</span><p>اختبارات قصيرة للفهم</p></div>
+    </section>
+
+    <section class="learner-home" id="learner-home" aria-labelledby="learner-home-title">
+      <div class="learner-heading"><div><p class="eyebrow">رحلتك التعليمية</p><h2 id="learner-home-title">خطتك تبدأ من هدفك ومستواك</h2></div><p>اختر ما تريد تطويره، ثم دع التقييم التشخيصي يحدد نقطة البداية المناسبة من المحتوى الحالي.</p></div>
+      <div class="learner-grid">
+        <form class="goal-card" id="learning-goal-form">
+          <label for="learning-goal">هدفي الحالي</label>
+          <select id="learning-goal" name="learning_goal">
+            <option value="national-identity">تطوير فهم الثقافة الوطنية والهوية</option>
+            <option value="self-directed-learning">بناء مهارات التعلّم الذاتي</option>
+            <option value="digital-civic-awareness">تعزيز الوعي الرقمي والمجتمعي</option>
+          </select>
+          <label for="study-time">الوقت المناسب للجلسة</label>
+          <select id="study-time" name="study_time"><option value="10">10 دقائق</option><option value="20" selected>20 دقيقة</option><option value="30">30 دقيقة</option></select>
+          <button class="course-button" type="submit">حفظ خطتي</button>
+          <p class="goal-message" id="goal-message" aria-live="polite"></p>
+        </form>
+        <article class="next-action-card" aria-live="polite">
+          <p class="eyebrow">أفضل خطوة الآن</p>
+          <h3 id="next-action-title">ابدأ بتحديد مستواك</h3>
+          <p id="next-action-reason">سيظهر هنا الإجراء الأنسب بناءً على هدفك، تقدمك، وأدائك في التقييم.</p>
+          <button class="button button-primary" id="next-action-button" type="button">ابدأ التقييم التشخيصي</button>
+        </article>
+        <article class="mastery-card"><p class="eyebrow">ملف الإتقان</p><div id="mastery-list" class="mastery-list" aria-live="polite"></div><p class="review-note" id="review-note"></p></article>
+      </div>
+    </section>
+
+    <section class="member-learning" id="member-dashboard" aria-labelledby="member-learning-title" hidden>
+      <div class="section-heading"><div><p class="eyebrow">لوحة المتعلم</p><h2 id="member-learning-title">رحلتك داخل أكاديمية همّة</h2></div><p id="member-learning-summary">يُحمّل تقدمك ونتائجك من حسابك.</p></div>
+      <div class="member-learning-grid">
+        <article><p class="eyebrow">التقدم</p><div id="member-progress-list" class="member-list"></div></article>
+        <article><p class="eyebrow">الاختبارات</p><div id="member-attempts-list" class="member-list"></div></article>
+        <article><p class="eyebrow">الشهادات</p><div id="member-certificates-list" class="member-list"></div></article>
+      </div>
+    </section>
+
+    <section class="paths-section" id="paths" aria-labelledby="paths-title">
+      <div class="section-heading">
+        <div><p class="eyebrow">مسارات المنصة</p><h2 id="paths-title">اختر مساحة التعلّم الأقرب لك</h2></div>
+        <p>كل مسار يتكوّن من وحدات قصيرة. أكمل أي درس بالترتيب الذي يناسبك، ثم اختبر فهمك في النهاية.</p>
+      </div>
+      <div class="filters" role="tablist" aria-label="تصفية المسارات">
+        <button class="filter is-active" type="button" data-filter="all" role="tab" aria-selected="true">الكل</button>
+        <button class="filter" type="button" data-filter="culture" role="tab" aria-selected="false">ثقافي</button>
+        <button class="filter" type="button" data-filter="education" role="tab" aria-selected="false">تعليمي</button>
+        <button class="filter" type="button" data-filter="awareness" role="tab" aria-selected="false">توعوي</button>
+      </div>
+      <div class="path-grid" id="path-grid" aria-live="polite"></div>
+    </section>
+
+    <section class="library-section" id="library" aria-labelledby="library-title">
+      <div class="library-copy"><p class="eyebrow">مكتبة التمكين</p><h2 id="library-title">تعلّم على شكل خطوات قابلة للتطبيق</h2><p>تُعرض المواد هنا كوحدات موجزة حتى تكون البداية واضحة، ثم تُطوّر لاحقًا بإضافة محتوى معتمد وورش مباشرة.</p></div>
+      <div class="library-list">
+        <article><span class="library-number">01</span><h3>مفاهيم أساسية</h3><p>مدخل واضح يضع الفكرة في سياقها الصحيح.</p></article>
+        <article><span class="library-number">02</span><h3>تطبيقات عملية</h3><p>خطوات تساعدك على تحويل المعرفة إلى ممارسة.</p></article>
+        <article><span class="library-number">03</span><h3>مراجعة وفهم</h3><p>اختبار قصير في نهاية كل مسار لمراجعة النقاط الرئيسية.</p></article>
+      </div>
+    </section>
+
+    <section class="how-section" id="how-it-works" aria-labelledby="how-title">
+      <div class="section-heading compact"><div><p class="eyebrow">كيف تبدأ</p><h2 id="how-title">ثلاث خطوات، ومسار واضح</h2></div></div>
+      <ol class="steps">
+        <li><span>1</span><div><h3>اختر المسار</h3><p>ابدأ بالموضوع الذي تريد تطوير فهمك فيه.</p></div></li>
+        <li><span>2</span><div><h3>أكمل الوحدات</h3><p>اقرأ الدروس القصيرة وطبّق ما يناسبك منها.</p></div></li>
+        <li><span>3</span><div><h3>راجع تقدّمك</h3><p>احفظ إنجازك على جهازك وأكمل من حيث توقفت.</p></div></li>
+      </ol>
+    </section>
+  </main>
+
+  <footer class="academy-footer">
+    <img src="../assets/images/embedded/94261e3b2682b257.webp" alt="شعار مبادرة همّة">
+    <p>أكاديمية همّة جزء من مبادرة همّة الشبابية الوطنية.</p>
+    <a href="../">العودة إلى الموقع الرئيسي</a>
+  </footer>
+
+  <dialog class="lesson-dialog" id="lesson-dialog" aria-labelledby="lesson-title">
+    <div class="dialog-head"><button class="dialog-close" id="dialog-close" type="button" aria-label="إغلاق">×</button><span id="dialog-category"></span></div>
+    <div id="lesson-content"></div>
+  </dialog>
+  <dialog class="lesson-dialog diagnostic-dialog" id="diagnostic-dialog" aria-labelledby="diagnostic-title">
+    <div class="dialog-head"><button class="dialog-close" id="diagnostic-close" type="button" aria-label="إغلاق">×</button><span>تقييم تشخيصي</span></div>
+    <div id="diagnostic-content"></div>
+  </dialog>
+  <dialog class="lesson-dialog account-dialog" id="account-dialog" aria-labelledby="account-dialog-title">
+    <div class="dialog-head"><button class="dialog-close" id="account-close" type="button" aria-label="إغلاق">×</button><span>حساب المتعلم</span></div>
+    <div class="account-body">
+      <div id="account-guest-view">
+        <p class="eyebrow">أكاديمية همّة</p><h2 id="account-dialog-title">تعلّمك محفوظ معك</h2><p>سجّل الدخول لمتابعة الدروس والاختبارات والشهادات من أي جهاز.</p>
+        <form id="academy-login-form" class="account-form">
+          <label>البريد الإلكتروني<input name="email" type="email" autocomplete="email" required></label>
+          <label>كلمة المرور<input name="password" type="password" autocomplete="current-password" required></label>
+          <button class="course-button" type="submit">تسجيل الدخول</button>
+        </form>
+        <div class="account-links"><button type="button" id="registration-open">إنشاء حساب مبادر جديد</button><button type="button" id="recovery-open">استعادة كلمة المرور</button></div>
+        <p class="goal-message" id="account-message" aria-live="polite"></p>
+      </div>
+      <div id="account-member-view" hidden>
+        <p class="eyebrow">حسابك</p><h2 id="account-member-name">مرحبًا بك</h2><p id="account-member-status"></p>
+        <div class="account-links"><button type="button" id="profile-open">تعديل ملفي</button><button type="button" id="account-dashboard-open">لوحة التعلم</button><button type="button" id="account-logout">تسجيل الخروج</button></div>
+      </div>
+    </div>
+  </dialog>
+  <dialog class="lesson-dialog registration-dialog" id="registration-dialog" aria-labelledby="registration-title">
+    <div class="dialog-head"><button class="dialog-close" id="registration-close" type="button" aria-label="إغلاق">×</button><span>حساب مبادر جديد</span></div>
+    <form id="academy-registration-form" class="registration-form">
+      <div class="registration-step" data-step="1"><p class="eyebrow">1 من 3 · الحساب</p><h2 id="registration-title">أنشئ حسابك</h2><label>البريد الإلكتروني *<input name="email" type="email" autocomplete="email" required></label><label>كلمة المرور *<input name="password" type="password" minlength="8" autocomplete="new-password" required></label><label>تأكيد كلمة المرور *<input name="password_confirmation" type="password" minlength="8" autocomplete="new-password" required></label></div>
+      <div class="registration-step" data-step="2" hidden><p class="eyebrow">2 من 3 · البيانات الشخصية</p><h2>بياناتك الأساسية</h2><label>الاسم الكامل *<input name="full_name" required></label><label>الرقم الوطني *<input name="national_id" inputmode="numeric" required></label><label>رقم الهاتف الأردني *<input name="phone" inputmode="tel" placeholder="0790000000 أو +962790000000" required></label><label>المحافظة *<input name="governorate" required></label><label>المدينة *<input name="city" required></label><label>الحي <input name="neighborhood"></label><label>العمر *<input name="age" type="number" min="13" max="100" required></label><label>التخصص <input name="specialization"></label><label>الحالة الدراسية أو المهنية <input name="professional_status"></label></div>
+      <div class="registration-step" data-step="3" hidden><p class="eyebrow">3 من 3 · الانضمام</p><h2>كيف ترغب بالمشاركة؟</h2><label>اللجنة المرغوبة *<input name="committee_preference" required></label><label>مجالات الاهتمام *<textarea name="interests" required placeholder="افصل بينها بفاصلة"></textarea></label><label>المهارات <textarea name="skills" placeholder="افصل بينها بفاصلة"></textarea></label><label>الخبرات التطوعية <textarea name="volunteering_experience"></textarea></label><label>الدورات <textarea name="courses_completed"></textarea></label><label>سبب الانضمام *<textarea name="joining_reason" required></textarea></label><label>الدور المفضل <input name="preferred_role"></label><label>الأيام والساعات المتاحة *<input name="availability_text" required placeholder="مثال: السبت والثلاثاء، 5-7 مساءً"></label><label>نوع المشاركة *<select name="participation_mode" required><option value="">اختر</option><option value="in_person">حضوري</option><option value="remote">عن بُعد</option><option value="hybrid">كلاهما</option></select></label><label>روابط أعمال أو حسابات مهنية <textarea name="portfolio_urls" placeholder="افصل بينها بسطر جديد"></textarea></label><label class="check-line"><input type="checkbox" name="privacy_accepted" required> أوافق على سياسة الخصوصية *</label><label class="check-line"><input type="checkbox" name="conduct_accepted" required> أوافق على مدونة السلوك *</label></div>
+      <div class="registration-actions"><button class="button button-quiet" type="button" id="registration-back" hidden>السابق</button><button class="course-button" type="button" id="registration-next">التالي</button><button class="course-button" type="submit" id="registration-submit" hidden>إنشاء الحساب وإكمال الملف</button></div>
+      <p class="goal-message" id="registration-message" aria-live="polite"></p>
+    </form>
+  </dialog>
+  <dialog class="lesson-dialog assessment-dialog" id="assessment-dialog" aria-labelledby="assessment-title">
+    <div class="dialog-head"><button class="dialog-close" id="assessment-close" type="button" aria-label="إغلاق">×</button><span id="assessment-counter">اختبار المادة</span></div>
+    <div id="assessment-content" class="assessment-content"></div>
+  </dialog>
+  <script src="../assets/js/env.js" defer></script>
+  <script src="./learning-core.js" defer></script>
+  <script src="./academy.js?v=academy-v2-2" defer></script>
+  <script src="./academy-account.js?v=academy-v2-2" defer></script>
+  <script src="./academy-assessment.js?v=academy-v2-2" defer></script>
+</body>
+</html>

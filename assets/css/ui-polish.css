@@ -1,4 +1,6 @@
 /* Identity-preserving UX polish: keeps existing colors/backgrounds and adds subtle motion. */
+.login-register-link { transition: transform 180ms ease, background-color 180ms ease, color 180ms ease, box-shadow 180ms ease; }
+.login-register-link:hover, .login-register-link:focus-visible { transform: translateY(-2px); box-shadow: 0 8px 18px rgba(0, 122, 61, 0.16); }
 :root {
     --motion-ease: cubic-bezier(0.22, 1, 0.36, 1);
     --motion-fast: 180ms;
